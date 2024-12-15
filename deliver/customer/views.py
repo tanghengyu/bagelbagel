@@ -45,15 +45,27 @@ class Register(View):
         messages.success(request, "Registration successful! Please check your email to activate your profile.")
         return redirect("login")
     
-from django.contrib.auth.views import LoginView
+# from django.contrib.auth.views import LoginView
 
-class UserLoginView(LoginView):
-    template_name = 'customer/login.html'
+# class UserLoginView(LoginView):
+#     template_name = 'customer/login.html'
 
-    def get_success_url(self):
-        """Redirect users after successful login."""
-        return self.request.GET.get('next', '/')
+#     def get_success_url(self):
+#         """Redirect users after successful login."""
+#         return self.request.GET.get('next', '/')
     
+# from django.contrib.auth.views import LoginView
+
+class UserLoginView(View):
+    template_name = 'customer/login.html'
+    def get(self, request, *args, **kwargs):
+        return render(request, 'customer/login.html') 
+
+    # def get_success_url(self):
+    #     """Redirect users after successful login."""
+    #     return self.request.GET.get('next', '/')
+    
+
 class Order(View):
     def get(self, request, *args, **kwargs):
         
