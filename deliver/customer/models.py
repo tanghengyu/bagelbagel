@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 # Create your models here.
 class MenuItem(models.Model):
@@ -8,7 +10,7 @@ class MenuItem(models.Model):
     image=models.ImageField(upload_to='menu_images/')
     price=models.DecimalField(max_digits=5, decimal_places=2)
     category=models.ManyToManyField('Category', related_name='item')
-
+    is_available=models.BooleanField(default=True)
     def __str__(self):
         return self.name
 
@@ -24,14 +26,15 @@ class Profile(models.Model):
         ('Driver', 'Driver'),
     ]
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     store_location = models.CharField(max_length=255, null=True, blank=True)
     menu_items = models.TextField(null=True, blank=True)
     vehicle_info = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
-        return self.user.username
+        return f"{self.user.username} - {self.role}"
+
 class OrderModel(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
     price = models.DecimalField(max_digits=7, decimal_places=2)
@@ -47,3 +50,53 @@ class OrderModel(models.Model):
     ready_for_pickup = models.BooleanField(default=False)
     def __str__(self):
         return f'Order: {self.created_on.strftime("%b %d %I: %M %p")}'
+    
+    
+class ShoppingCartModel(models.Model):
+    customer = models.OneToOneField(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name="shopping_cart",
+        limit_choices_to={'profile__role': 'Customer'}  # Restrict association to Customer role
+    )
+    created_on = models.DateTimeField(auto_now_add=True)
+    updated_on = models.DateTimeField(auto_now_add=True)
+
+    # price = models.DecimalField(max_digits=7, decimal_places=2)
+    # quantity = models.PositiveIntegerField(default=1)
+
+    # is_empty = models.BooleanField(default=True)
+
+
+    def __str__(self):
+        return f"ShoppingCart for {self.customer.username}"
+
+    def calculate_total_price(self):
+        """
+        Calculates the total price of all items in the cart.
+        """
+        return sum(item.quantity * item.menu_item.price for item in self.cart_items.all())
+    
+    def calculate_total_quantity(self):
+        return sum(item.quantity for item in self.cart_items.all())
+    
+    def is_empty(self):
+        return len(self.cart_items.all()) == 0
+    
+class CartItem(models.Model):
+    """
+    Represents an individual item in a shopping cart.
+    """
+    cart = models.ForeignKey(ShoppingCartModel, on_delete=models.CASCADE, related_name="cart_items")
+    menu_item = models.ForeignKey(MenuItem, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f"{self.quantity} x {self.menu_item.name} in {self.cart.customer.username}'s cart"
+
+
+# Signal to automatically create a ShoppingCart for Customer users
+@receiver(post_save, sender=Profile)
+def create_shopping_cart_for_customer(sender, instance, created, **kwargs):
+    if created and instance.role == 'Customer':
+        ShoppingCartModel.objects.get_or_create(customer=instance.user)

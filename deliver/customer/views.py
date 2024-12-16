@@ -1,7 +1,7 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View 
 from django.core.mail import send_mail
-from .models import MenuItem, Category, OrderModel, Profile
+from .models import MenuItem, Category, OrderModel, Profile, ShoppingCartModel
 from django.contrib.auth.models import User
 from django.contrib import messages
 import json
@@ -83,7 +83,7 @@ class Order(View):
                    'drinks': drinks} 
         
         # render teh template 
-        return render(request, 'customer/order.html', context)
+        return render(request, 'customer/order_dev.html', context)
     
     def post(self, request, *args, **kwargs):
         name=request.POST.get('name')
@@ -161,3 +161,12 @@ class OrderConfirmation(View):
 class OrderPayConfirmation(View):
     def get(self, request, *args, **kwargs):
         return render(request, 'customer/order_pay_confirmation.html')
+
+class ShoppingCart(View):
+    def get(self, request, *args, **kwargs):
+            # shopping_cart_model = get_object_or_404(ShoppingCartModel, customer=request.user)
+
+            return render(request, 'customer/shopping_cart.html')
+    
+
+    

@@ -19,7 +19,7 @@ from django.urls import path, include
 from django.conf import settings 
 from django.conf.urls.static import static
 
-from customer.views import Index, About, Order, OrderConfirmation, OrderPayConfirmation, Register, UserLoginView
+from customer.views import Index, About, Order, OrderConfirmation, OrderPayConfirmation, Register, UserLoginView, ShoppingCart
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,6 +28,7 @@ urlpatterns = [
     path('merchant/', include('merchant.urls')),
     path('about/', About.as_view(), name='about'),
     path('order/', Order.as_view(), name='order'), 
+    path('shopping_cart/', ShoppingCart.as_view(), name='shopping_cart'),
     path('order-confirmation/<int:pk>', OrderConfirmation.as_view(), name='order-confirmation'),
     path('payment-confirmation/', OrderPayConfirmation.as_view(), name='payment-submitted'),
     path('register/', Register.as_view(), name='register'), 
