@@ -25,6 +25,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
     path('', Index.as_view(), name='index'),
+    path('merchant/', include('merchant.urls')),
     path('about/', About.as_view(), name='about'),
     path('order/', Order.as_view(), name='order'), 
     path('order-confirmation/<int:pk>', OrderConfirmation.as_view(), name='order-confirmation'),
