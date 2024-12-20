@@ -19,6 +19,7 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
 class Profile(models.Model):
     ROLE_CHOICES = [
         ('Customer', 'Customer'),

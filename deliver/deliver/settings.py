@@ -36,8 +36,10 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 INSTALLED_APPS = [
+    'accounts',
     'customer',
     'merchant',
+    'driver',
     'crispy_forms',
     'crispy_bootstrap4',
     'allauth', 
@@ -139,8 +141,13 @@ MEDIA_URL = '/media/'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-ACCOUNT_ADAPTER = 'merchant.account_adapter.NoNewUsersAccountAdapter'
-LOGIN_REDIRECT_URL = 'dashboard'
+
+ACCOUNT_SIGNUP_FORM_CLASS = 'accounts.forms.CustomSignupForm'
+
+LOGIN_REDIRECT_URL = 'index'
+# ACCOUNT_ADAPTER = 'merchant.account_adapter.NoNewUsersAccountAdapter'
+ACCOUNT_ADAPTER = 'accounts.adapters.CustomAccountAdapter'
+
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
 

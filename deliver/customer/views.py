@@ -14,36 +14,36 @@ class Index(View):
 class About(View):
     def get(self, request, *args, **kwargs):
         return render(request, 'customer/about.html')
-class Register(View):
-    def get(self, request, *args, **kwargs):
-        return render(request, 'customer/register.html')
+# class Register(View):
+#     def get(self, request, *args, **kwargs):
+#         return render(request, 'customer/register.html')
     
-    def post(self, request, *args, **kwargs):
-        username = request.POST.get("username")
-        email = request.POST.get("email")
-        password = request.POST.get("password")
-        role = request.POST.get("role")
-        store_location = request.POST.get("store_location", None)
-        menu_items = request.POST.get("menu_items", None)
-        vehicle_info = request.POST.get("vehicle_info", None)
-        print('grabbing information for {}'.format(username))
-        if User.objects.filter(username=username).exists():
-            messages.error(request, "Username already exists.")
-            return redirect("index")
+#     def post(self, request, *args, **kwargs):
+#         username = request.POST.get("username")
+#         email = request.POST.get("email")
+#         password = request.POST.get("password")
+#         role = request.POST.get("role")
+#         store_location = request.POST.get("store_location", None)
+#         menu_items = request.POST.get("menu_items", None)
+#         vehicle_info = request.POST.get("vehicle_info", None)
+#         print('grabbing information for {}'.format(username))
+#         if User.objects.filter(username=username).exists():
+#             messages.error(request, "Username already exists.")
+#             return redirect("index")
 
-        user = User.objects.create_user(username=username, email=email, password=password)
-        profile = Profile.objects.create(
-            user=user,
-            role=role,
-            store_location=store_location if role == "Merchant" else None,
-            menu_items=menu_items if role == "Merchant" else None,
-            vehicle_info=vehicle_info if role == "Driver" else None,
-        )
-        # Save role-specific data
-        profile.save()
+#         user = User.objects.create_user(username=username, email=email, password=password)
+#         profile = Profile.objects.create(
+#             user=user,
+#             role=role,
+#             store_location=store_location if role == "Merchant" else None,
+#             menu_items=menu_items if role == "Merchant" else None,
+#             vehicle_info=vehicle_info if role == "Driver" else None,
+#         )
+#         # Save role-specific data
+#         profile.save()
         
-        messages.success(request, "Registration successful! Please check your email to activate your profile.")
-        return redirect("login")
+#         messages.success(request, "Registration successful! Please check your email to activate your profile.")
+#         return redirect("login")
     
 # from django.contrib.auth.views import LoginView
 
@@ -83,7 +83,8 @@ class Order(View):
                    'drinks': drinks} 
         
         # render teh template 
-        return render(request, 'customer/order_dev.html', context)
+        # return render(request, 'customer/order_dev.html', context)
+        return render(request, 'customer/order.html', context)
     
     def post(self, request, *args, **kwargs):
         name=request.POST.get('name')
@@ -169,4 +170,22 @@ class ShoppingCart(View):
             return render(request, 'customer/shopping_cart.html')
     
 
-    
+from django.contrib.auth.mixins import LoginRequiredMixin # validate the request based on 
+
+class CustomerProfileView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        return render(request, 'customer/customer_profile.html')
+        # # Fetch current orders for the logged-in customer
+        # current_orders = OrderModel.objects.filter(email=request.user.email, is_paid=True).order_by('-created_on')
+
+        # # Fetch the shopping cart for the logged-in customer
+        # shopping_cart = ShoppingCartModel.objects.filter(customer=request.user).first()
+        # shopping_cart_items = shopping_cart.cart_items.all() if shopping_cart else []
+        # total_price = shopping_cart.calculate_total_price() if shopping_cart else 0
+
+        # context = {
+        #     'current_orders': current_orders,
+        #     'shopping_cart_items': shopping_cart_items,
+        #     'total_price': total_price,
+        # }
+        # return render(request, 'customer/customer_profile.html', context)
