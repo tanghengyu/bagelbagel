@@ -40,7 +40,7 @@ class CustomSignupForm(forms.Form):  # Do not inherit SignupForm directly
         """
         from allauth.account.forms import SignupForm  # Import locally
         role = self.cleaned_data['role']
-        from customer.models import Profile, ShoppingCartModel
+        from customer.models import Profile
         profile = Profile.objects.create(user=user, role=role)
         profile.save()
         return profile 
