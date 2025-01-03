@@ -38,6 +38,9 @@
                                 {% endif %}
                             </td>
                             <td>{{ order.created_on|date:"M d, Y h:i A" }}</td>
+                            <td>
+                                <a href="{% url 'customer:order_details' order.pk %}"><i class="fas fa-edit"></i>                          
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>

@@ -3,11 +3,12 @@
 {% block content %}
 <div class="container mb-3">
     <div class="d-flex justify-content-end">
-        <button type="button" class="btn btn-outline-primary rounded">
+        <a href="{% url 'customer:customer_shopping_cart' %}" class="btn btn-outline-primary rounded">
             <i class="fas fa-shopping-cart"></i> &nbsp;&nbsp;Shopping Cart
-        </button>
+        </a>
     </div>
 </div>
+
 <div class="container mb-5">
     <div class="row justify-content-center mt-1">
         <div class="col-md-12 col-sm-12 p-4">
@@ -19,16 +20,22 @@
                         <div class="col-md-2 col-sm-12">
                             <img class="rounded" src="{{ bagel.image.url }}" width="100" height="100"/>
                         </div>
-                        <div class="col-md-8 col-sm-12">
-                            <div class="d-flex flex-row">
-                                <div class="form-group form-check">
-                                    <input type="checkbox" name="items[]" class="form-check-input" value="{{ bagel.pk }}">
-                                    <label class="form-check-label">{{ bagel.name }}</label>
-                                </div>
-                                <p class="font-weight-bold pl-5">{{ bagel.price }}</p>
-                            </div>
+
+                        <div class="col-md-6 col-sm-12">
+                            <p class="mb-1 font-weight-bold">{{ bagel.name }}</p>
+                            <p class="mb-1 text-success">{{ bagel.price }}</p>
                             <p>{{ bagel.description }}</p>
                         </div>
+
+                        <div class="col-md-4 col-sm-12 d-flex align-items-center">
+                            <button type="button" class="btn btn-dark btn-sm decrease" data-id="{{ bagel.pk }}">-</button>
+                            <input type="text" class="form-control text-center mx-2 quantity-input" name="quantity[{{ bagel.pk }}]" value="0" data-id="{{ bagel.pk }}" readonly>
+                            <button type="button" class="btn btn-dark btn-sm increase" data-id="{{ bagel.pk }}">+</button>
+                            <button type="submit" class="rounded btn-outline-light add-to-cart" name="add_to_cart" value="{{ bagel.pk }}" disabled>
+                                <i class="fas fa-cart-plus" data-id="{{ bagel.pk }}" style="color: gray;"></i>
+                            </button>
+                        </div>
+
                     </div>
                     <hr />
                 {% endfor %}
@@ -40,16 +47,21 @@
                         <div class="col-md-2 col-sm-12">
                             <img class="rounded" src="{{ schmear.image.url }}" width="100" height="100"/>
                         </div>
-                        <div class="col-md-8 col-sm-12">
-                            <div class="d-flex flex-row">
-                                <div class="form-group form-check">
-                                    <input type="checkbox" name="items[]" class="form-check-input" value="{{ schmear.pk }}">
-                                    <label class="form-check-label">{{ schmear.name }}</label>
-                                </div>
-                                <p class="font-weight-bold pl-5">{{ schmear.price }}</p>
-                            </div>
+                        <div class="col-md-6 col-sm-12">
+                            <p class="mb-1 font-weight-bold">{{ schmear.name }}</p>
+                            <p class="mb-1 text-success">{{ schmear.price }}</p>
                             <p>{{ schmear.description }}</p>
                         </div>
+
+                        <div class="col-md-4 col-sm-12 d-flex align-items-center">
+                            <button type="button" class="btn btn-dark btn-sm decrease" data-id="{{ schmear.pk }}">-</button>
+                            <input type="text" class="form-control text-center mx-2 quantity-input" name="quantity[{{ schmear.pk }}]" value="0" data-id="{{ schmear.pk }}" readonly>
+                            <button type="button" class="btn btn-dark btn-sm increase" data-id="{{ schmear.pk }}">+</button>
+                            <button type="submit" class="rounded btn-outline-light add-to-cart" name="add_to_cart" value="{{ schmear.pk }}" disabled>
+                                <i class="fas fa-cart-plus" data-id="{{ schmear.pk }}" style="color: gray;"></i>
+                            </button>
+                        </div>
+
                     </div>
                     <hr />
                     {% endfor %}
@@ -61,82 +73,63 @@
                         <div class="col-md-2 col-sm-12">
                             <img class="rounded" src="{{ drink.image.url }}" width="100" height="100"/>
                         </div>
-                        <div class="col-md-8 col-sm-12">
-                            <div class="d-flex flex-row">
-                                <div class="form-group form-check">
-                                    <input type="checkbox" name="items[]" class="form-check-input" value="{{ drink.pk }}">
-                                    <label class="form-check-label">{{ drink.name }}</label>
-                                </div>
-                                <p class="font-weight-bold pl-5">{{ drink.price }}</p>
-                            </div>
+                        <div class="col-md-6 col-sm-12">
+                            <p class="mb-1 font-weight-bold">{{ drink.name }}</p>
+                            <p class="mb-1 text-success">{{ drink.price }}</p>
                             <p>{{ drink.description }}</p>
+                        </div>
+                        <div class="col-md-4 col-sm-12 d-flex align-items-center">
+                            <button type="button" class="btn btn-dark btn-sm decrease" data-id="{{ drink.pk }}">-</button>
+                            <input type="text" class="form-control text-center mx-2 quantity-input" name="quantity[{{ drink.pk }}]" value="0" data-id="{{ drink.pk }}" readonly>
+                            <button type="button" class="btn btn-dark btn-sm increase" data-id="{{ drink.pk }}">+</button>
+                            <button type="submit" class="rounded btn-outline-light add-to-cart" name="add_to_cart" value="{{ drink.pk }}" disabled>
+                                <i class="fas fa-cart-plus" data-id="{{ drink.pk }}" style="color: gray;"></i>
+                            </button>
                         </div>
                     </div>
                     <hr />
                     {% endfor %}
-                </div>
-                <div class="form-group pt-3">
-                    <label for="name">Full Name</label>
-                    <input required class="form-control" type="text" placeholder="Your Name" name="name" />
-
-
-                </div>
-                <div class="form-group pt-3">
-                    <label for="name">Email Address</label>
-                    <input required class="form-control" type="text" placeholder="example@company.com" name="email" />
-                </div>
-                <div class="form-group pt-3">
-                    <label for="name">Street Address</label>
-                    <input required class="form-control" type="text" placeholder="123 Main St" name="street" />
-                </div>
-
-                <div class="row">
-                    <div class="col-md-4 col-sm-12">
-                        <div class="form-group pt-3">
-                            <label for="name">City</label>
-                            <input required class="form-control" type="text" placeholder="Harrisburg" name="city" />
-                        </div>
-                    </div>
-                    <div class="col-md-4 col-sm-12">
-                        <div class="form-group pt-3">
-                            <label for="name">State</label>
-                            <input required class="form-control" type="text" placeholder="PA" name="state" />
-                        </div>
-                    </div>
-                    <div class="col-md-4 col-sm-12">
-                        <div class="form-group pt-3">
-                            <label for="name">Zip Code</label>
-                            <input required class="form-control" type="text" placeholder="17101" name="zip_code" />
-                        </div>
-                    </div>
-                </div>
-                <!-- <button class="btn btn-dark mt-5">Place Order!</button> -->
-                <button type="button" class="btn btn-dark" data-toggle="modal" data-target="#submitModal">
-                    Submit Order
-                </button>
-                <!-- Modal -->
-                <div class="modal fade" id="submitModal" tabindex="-1" role="dialog" aria-labelledby="submitModalLabel" aria-hidden="true">
-                  <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                      <div class="modal-header">
-                        <h5 class="modal-title" id="submitModalLabel">Are you sure you want to submit your order?</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                          <span aria-hidden="true">&times;</span>
-                        </button>
-                      </div>
-                      <!-- <div class="modal-body">
-                        ...
-                      </div> -->
-                      <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Go Back</button>
-                        <button type="submit" class="btn btn-primary">Place Order</button>
-                      </div>
-                    </div>
-                  </div>
                 </div>
 
             </form>
         </div>
     </div>
 </div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Handle increase buttons
+        document.querySelectorAll(".increase").forEach(button => {
+            button.addEventListener("click", function () {
+                const input = document.querySelector(`.quantity-input[data-id="${this.dataset.id}"]`);
+                const addToCartButton = document.querySelector(`.add-to-cart[value="${this.dataset.id}"]`);
+                const cartIcon = document.querySelector(`.fas.fa-cart-plus[data-id="${this.dataset.id}"]`);
+
+                let currentValue = parseInt(input.value) || 0;
+                input.value = currentValue + 1;
+
+                if (currentValue + 1 > 0) {
+                    addToCartButton.disabled = false;
+                    cartIcon.style.color = "black"; // Change icon color to black
+                }
+            });
+        });
+
+        document.querySelectorAll(".decrease").forEach(button => {
+            button.addEventListener("click", function () {
+                const input = document.querySelector(`.quantity-input[data-id="${this.dataset.id}"]`);
+                const addToCartButton = document.querySelector(`.add-to-cart[value="${this.dataset.id}"]`);
+                const cartIcon = document.querySelector(`.fas.fa-cart-plus[data-id="${this.dataset.id}"]`);
+
+                let currentValue = parseInt(input.value) || 0;
+                if (currentValue > 0) {
+                    input.value = currentValue - 1;
+                }
+                addToCartButton.disabled = input.value <= 0;
+                if (addToCartButton.disabled){
+                    cartIcon.style.color="gray";
+                }
+            });
+        });
+    });
+</script>
 {% endblock content %}

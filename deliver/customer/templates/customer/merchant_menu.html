@@ -1,0 +1,83 @@
+{% extends 'customer/base.html' %}
+{% block content %}
+<div class="container mb-3">
+    <div class="d-flex justify-content-end">
+        <a href="{% url 'customer:customer_shopping_cart' %}" class="btn btn-outline-primary rounded">
+            <i class="fas fa-shopping-cart"></i> &nbsp;&nbsp;Shopping Cart
+        </a>
+    </div>
+</div>
+
+
+<div class="container my-5">
+    <h2 class="text-center">Menu for {{ merchant.user.username }}</h2>
+    <form method="POST">
+        {% csrf_token %}
+        {% for category in categories %}
+        <div class="category-section mb-4">
+            <h4 class="category-title">{{ category.name }}</h4>
+            <div class="row">
+                {% for item in category.item.all %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.name }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ item.name }}</h5>
+                            <p class="card-text">{{ item.description }}</p>
+                            <p class="card-text text-success">${{ item.price }}</p>
+                            <div class="d-flex align-items-center">
+                                <button type="button" class="btn btn-dark btn-sm decrease" data-id="{{ item.pk }}">-</button>
+                                <input type="text" class="form-control text-center mx-2 quantity-input" name="quantity[{{ item.pk }}]" value="0" data-id="{{ item.pk }}" readonly>
+                                <button type="button" class="btn btn-dark btn-sm increase" data-id="{{ item.pk }}">+</button>
+                                <button type="submit" class="btn btn-outline-light add-to-cart" name="add_to_cart" value="{{ item.pk }}" disabled>
+                                    <i class="fas fa-cart-plus" data-id="{{ item.pk }}" style="color: gray;"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </form>
+
+</div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Handle increase buttons
+        document.querySelectorAll(".increase").forEach(button => {
+            button.addEventListener("click", function () {
+                const input = document.querySelector(`.quantity-input[data-id="${this.dataset.id}"]`);
+                const addToCartButton = document.querySelector(`.add-to-cart[value="${this.dataset.id}"]`);
+                const cartIcon = document.querySelector(`.fas.fa-cart-plus[data-id="${this.dataset.id}"]`);
+
+                let currentValue = parseInt(input.value) || 0;
+                input.value = currentValue + 1;
+
+                if (currentValue + 1 > 0) {
+                    addToCartButton.disabled = false;
+                    cartIcon.style.color = "black"; // Change icon color to black
+                }
+            });
+        });
+
+        document.querySelectorAll(".decrease").forEach(button => {
+            button.addEventListener("click", function () {
+                const input = document.querySelector(`.quantity-input[data-id="${this.dataset.id}"]`);
+                const addToCartButton = document.querySelector(`.add-to-cart[value="${this.dataset.id}"]`);
+                const cartIcon = document.querySelector(`.fas.fa-cart-plus[data-id="${this.dataset.id}"]`);
+
+                let currentValue = parseInt(input.value) || 0;
+                if (currentValue > 0) {
+                    input.value = currentValue - 1;
+                }
+                addToCartButton.disabled = input.value <= 0;
+                if (addToCartButton.disabled){
+                    cartIcon.style.color="gray";
+                }
+            });
+        });
+    });
+</script>
+{% endblock content %}
