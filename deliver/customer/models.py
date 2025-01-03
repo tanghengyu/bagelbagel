@@ -5,18 +5,35 @@ from django.dispatch import receiver
 
 # Create your models here.
 class MenuItem(models.Model):
+    
     name=models.CharField(max_length=128)
     description=models.TextField()
     image=models.ImageField(upload_to='menu_images/')
     price=models.DecimalField(max_digits=5, decimal_places=2)
     category=models.ManyToManyField('Category', related_name='item')
     is_available=models.BooleanField(default=True)
+    merchant = models.ForeignKey(
+        'Profile',
+        on_delete=models.CASCADE,
+        related_name='menu_items',
+        limit_choices_to={'role': 'Merchant'}, 
+        null=True, 
+        blank=True
+    )
+
     def __str__(self):
         return self.name
 
 class Category(models.Model):
     name=models.CharField(max_length=128)
-
+    merchant = models.ForeignKey(
+        'Profile',
+        on_delete=models.CASCADE,
+        related_name='categories',
+        limit_choices_to={'role': 'Merchant'}, 
+        null=True, 
+        blank=True
+    )
     def __str__(self):
         return self.name
 
@@ -30,7 +47,7 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
     store_location = models.CharField(max_length=255, null=True, blank=True)
-    menu_items = models.TextField(null=True, blank=True)
+    # menu_items = models.TextField(null=True, blank=True)
     vehicle_info = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
@@ -49,6 +66,24 @@ class OrderModel(models.Model):
     zip_code = models.IntegerField(blank=True, null=True)
     is_paid = models.BooleanField(default=False)
     ready_for_pickup = models.BooleanField(default=False)
+
+    # New Field: Merchant the order belongs to
+    merchant = models.ForeignKey(
+        'customer.Profile',  # Assuming Profile is in the same app
+        on_delete=models.CASCADE,
+        related_name='orders',
+        limit_choices_to={'role': 'Merchant'},  # Restrict to Merchant roles
+        null=True,
+        blank=True
+    )
+    customer =  models.ForeignKey(
+        'customer.Profile', # Assuming Profile is in the same app
+        on_delete=models.CASCADE,
+        related_name='orders_cust',
+        limit_choices_to={'role': 'Customer'},  # Restrict to Merchant roles
+        null=True,
+        blank=True
+    )
     def __str__(self):
         return f'Order: {self.created_on.strftime("%b %d %I: %M %p")}'
     
@@ -91,6 +126,9 @@ class CartItem(models.Model):
     cart = models.ForeignKey(ShoppingCartModel, on_delete=models.CASCADE, related_name="cart_items")
     menu_item = models.ForeignKey(MenuItem, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
+    total_price = models.DecimalField(max_digits=5, decimal_places=2, default = 0.00)
+
+    def item_total_price(self): return self.quantity * self.menu_item.price
 
     def __str__(self):
         return f"{self.quantity} x {self.menu_item.name} in {self.cart.customer.username}'s cart"
