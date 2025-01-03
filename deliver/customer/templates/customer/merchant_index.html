@@ -1,0 +1,23 @@
+{% extends 'customer/base.html' %}
+{% block content %}
+<div class="container my-5">
+    <h2 class="text-center">Available Merchants</h2>
+    <div class="row mt-4">
+        {% if merchants %}
+            {% for merchant in merchants %}
+                <div class="col-md-4 col-sm-12 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ merchant.user.username }}</h5>
+                            <p class="card-text">{{ merchant.store_location }}</p>
+                            <a href="{% url 'customer:merchant_menu' merchant.id %}" class="btn btn-primary">View Menu</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No merchants are currently available.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

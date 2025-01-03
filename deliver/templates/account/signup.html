@@ -1,31 +1,80 @@
 {% extends "account/base.html" %}
 
-{% load i18n %}
-
-{% block head_title %}{% trans "Signup" %}{% endblock %}
+{% block head_title %}Sign Up{% endblock %}
 
 {% load crispy_forms_tags %}
 
 {% block content %}
 <div class="row justify-content-center">
-  <div class="col-md-6 col-sm-12">
-    <h1>{% trans "Sign Up" %}</h1>
-
-    <p>{% blocktrans %}Already have an account? Then please <a href="{{ login_url }}">sign in</a>.{% endblocktrans %}</p>
-  </div>
+    <div class="col-md-6 col-sm-12">
+        <h1>Sign Up</h1>
+        <p>Already have an account? <a href="{% url 'account_login' %}">Sign In</a></p>
+    </div>
 </div>
 
 <div class="row justify-content-center">
-  <div class="col-md-6 col-sm-12">
-    <form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
-      {% csrf_token %}
-      {{ form|crispy }}
-      {% if redirect_field_value %}
-      <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
-      {% endif %}
-      <button class="btn btn-dark btn-block" type="submit">{% trans "Sign Up" %} &raquo;</button>
-    </form>
-  </div>
+    <div class="col-md-6 col-sm-12">
+        <form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" class="form-control" id="username" name="username" placeholder="Enter your username" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group">
+                <label for="password1">Password</label>
+                <input type="password" class="form-control" id="password1" name="password1" placeholder="Enter your password" required>
+            </div>
+            <div class="form-group">
+                <label for="password2">Confirm Password</label>
+                <input type="password" class="form-control" id="password2" name="password2" placeholder="Confirm your password" required>
+            </div>
+            <div class="form-group">
+                <label for="role">Select Role</label>
+                <select class="form-control" id="role" name="role" required>
+                    <option value="" disabled selected>--</option>
+                    <option value="Customer">Customer</option>
+                    <option value="Merchant">Merchant</option>
+                    <option value="Driver">Driver</option>
+                </select>
+            </div>
+            <div id="role-specific-fields" class="mt-3"></div>
+            <button type="submit" class="btn btn-dark btn-block">Sign Up</button>
+        </form>
+    </div>
 </div>
 
+<script>
+    document.getElementById("role").addEventListener("change", function () {
+        const roleSpecificFields = document.getElementById("role-specific-fields");
+        roleSpecificFields.innerHTML = ""; // Clear previous fields
+
+        if (this.value === "Merchant") {
+            roleSpecificFields.innerHTML = `
+                <div class="form-group">
+                    <label for="store-location">Store Location</label>
+                    <input type="text" class="form-control" id="store-location" name="store_location" placeholder="Enter your store location">
+                </div>
+                <div class="form-group">
+                    <label for="menu-items">Menu Items (optional)</label>
+                    <textarea class="form-control" id="menu-items" name="menu_items" placeholder="List your menu items"></textarea>
+                </div>`;
+        } else if (this.value === "Driver") {
+            roleSpecificFields.innerHTML = `
+                <div class="form-group">
+                    <label for="vehicle-info">Vehicle Information</label>
+                    <input type="text" class="form-control" id="vehicle-info" name="vehicle_info" placeholder="Enter your vehicle information">
+                </div>`;
+        } else if (this.value === "Customer") {
+            roleSpecificFields.innerHTML = `
+                <div class="form-group">
+                    <label for="delivery-info">Delivery Information</label>
+                    <input type="text" class="form-control" id="delivery-info" name="delivery_info" placeholder="Enter your delivery information">
+                </div>`;
+        }
+    });
+</script>
 {% endblock %}

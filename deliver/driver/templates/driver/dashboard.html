@@ -1,0 +1,23 @@
+{% extends 'driver/base.html' %}
+
+{% block content %}
+<i class="fas fa-right-from-bracket"></i>
+<div class="container">
+    <div class="row justify-content-center mt-3">
+        <div class="card col-md-5 mr-3">
+            <h4 class="text-center pt-2">Driver Dashboard</h4>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row justify-content-center mt-3">
+        <div class="card col-md-5 mr-3">
+            <a href="{% url 'account_logout' %}" type="button" class="btn btn-outline-primary rounded">
+                    <i class="fas fa-right-from-bracket"></i> &nbsp;&nbsp;Log Out
+            </a>
+
+        </div>
+    </div>
+</div>
+{% endblock content %}

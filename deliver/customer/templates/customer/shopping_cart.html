@@ -1,0 +1,113 @@
+{% extends "customer/base.html" %}
+
+{% block content %}
+<div class="container my-5">
+    <h2 class="text-center">Your Shopping Cart</h2>
+
+    {% if cart_items %}
+        <table class="table table-striped mt-4 ">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cart_items %}
+                    <tr>
+                        <td>{{ item.menu_item.name }}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>${{ item.menu_item.price }}</td>
+                        <td>${{ item.total_price }}</td>
+                        <!-- <td>${{ item.quantity|floatformat:2|add:item.menu_item.price }}</td> -->
+                        <td>
+                            <form method="post" action="{% url 'customer:remove_from_cart' item.pk %}">
+                                {% csrf_token %}
+                                <button class="btn btn-danger btn-sm">Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="text-right mt-4">
+            <h5>Total Price: ${{ total_price }}</h5>
+            <button class="btn btn-success">Checkout</button>
+        </div>
+    {% else %}
+        <p>Your shopping cart is empty. Start adding items!</p>
+    {% endif %}
+</div>
+
+<div class = "container my-5">
+    <div class="col-md-12 col-sm-12 p-4">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-group pt-4">
+                <label for="name">Full Name</label>
+                <input required class="form-control" type="text" placeholder="Your Name" name="name" />
+            
+            
+            </div>
+            <div class="form-group pt-3">
+                <label for="name">Email Address</label>
+                <input required class="form-control" type="text" placeholder="example@company.com" name="email" />
+            </div>
+            <div class="form-group pt-3">
+                <label for="name">Street Address</label>
+                <input required class="form-control" type="text" placeholder="123 Main St" name="street" />
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4 col-sm-12">
+                    <div class="form-group pt-3">
+                        <label for="name">City</label>
+                        <input required class="form-control" type="text" placeholder="Harrisburg" name="city" />
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-12">
+                    <div class="form-group pt-3">
+                        <label for="name">State</label>
+                        <input required class="form-control" type="text" placeholder="PA" name="state" />
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-12">
+                    <div class="form-group pt-3">
+                        <label for="name">Zip Code</label>
+                        <input required class="form-control" type="text" placeholder="17101" name="zip_code" />
+                    </div>
+                </div>
+            </div>
+            <!-- <button class="btn btn-dark mt-5">Place Order!</button> -->
+            <button type="button" class="btn btn-dark" data-toggle="modal" data-target="#submitModal">
+                Submit Order
+            </button>
+            <!-- Modal -->
+            <div class="modal fade" id="submitModal" tabindex="-1" role="dialog" aria-labelledby="submitModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="submitModalLabel">Are you sure you want to submit your order?</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <!-- <div class="modal-body">
+                    ...
+                </div> -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Go Back</button>
+                    <button type="submit" class="btn btn-primary">Place Order</button>
+                </div>
+                </div>
+            </div>
+            </div>
+            
+    </div>
+</div>
+
+
+{% endblock %}

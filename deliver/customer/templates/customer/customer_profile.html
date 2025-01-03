@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% include 'customer/navigation.html'%}
+{% block content %}
+<div class="container my-5">
+    <h2 class="text-center">Customer Profile</h2>
+    
+    <!-- Current Orders Section -->
+    <div class="mt-4">
+        <h3>Current Orders</h3>
+        {% if current_orders %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Items</th>
+                        <th>Total Price</th>
+                        <th>Status</th>
+                        <th>Placed On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in current_orders %}
+                        <tr>
+                            <td>{{ order.id }}</td>
+                            <td>
+                                <ul>
+                                    {% for item in order.items.all %}
+                                        <li>{{ item.name }} (x{{ item.quantity }})</li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                            <td>${{ order.price }}</td>
+                            <td>
+                                {% if order.ready_for_pickup %}
+                                    Ready for Pickup
+                                {% else %}
+                                    Under Preparation
+                                {% endif %}
+                            </td>
+                            <td>{{ order.created_on|date:"M d, Y h:i A" }}</td>
+                            <td>
+                                <a href="{% url 'customer:order_details' order.pk %}"><i class="fas fa-edit"></i>                          
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No current orders.</p>
+        {% endif %}
+    </div>
+
+    <!-- Shopping Cart Section -->
+    <div class="mt-4">
+        <h3>Shopping Cart</h3>
+        {% if shopping_cart_items %}
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Quantity</th>
+                        <th>Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in shopping_cart_items %}
+                        <tr>
+                            <td>{{ item.menu_item.name }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>${{ item.menu_item.price }}</td>
+                            <td>${{ item.quantity|floatformat:2|add:item.menu_item.price }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="text-right">
+                <h5>Total Price: ${{ total_price }}</h5>
+                <button class="btn btn-success">Checkout</button>
+            </div>
+        {% else %}
+            <p>Your shopping cart is empty.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

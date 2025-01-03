@@ -20,17 +20,26 @@
             <p class="font-weight-bold pt-4">Total: {{ price }}</p>
         </div>
     </div>
-    <div class="row justify-content-center">
-        <div class="col-md-6 text-center">
-            <div id="paypal-button">
-                <a href="{% url 'payment-submitted' %}" class="btn btn-primary btn-lg">
-                    <i class="fas fa-shopping-cart"></i> &nbsp;Check Out
-                </a>
-                
-                
-            </div>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="row justify-content-center">
+            <div class="col-md-6 text-center">
+                <div id="paypal-button">
+                    <!-- <a href="{% url 'payment-submitted' %}" type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-shopping-cart"></i> &nbsp;Check Out
+                    </a> -->
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-shopping-cart"></i> &nbsp;Submit Payment
+                    </button>
+                    
+                </div>
 
+            </div>
         </div>
-    </div>
+    </form>
+
 </div>
+
+
+
 {% endblock content %}

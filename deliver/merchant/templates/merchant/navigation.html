@@ -3,18 +3,28 @@
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
+
+
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav mr-auto">
 
       </ul>
+
       <ul class="navbar-nav">
+        <li>
+          <a class="navbar-brand" href="{% url 'account_logout' %}">Log Out</a>
+          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+        </li>
         <li class="nav-item">
             <button type="button" class="rounded btn-outline-light">
               <i class="fas fa-user"></i>
             </button>
         </li>
 
+
       </ul>
 
     </div>
-  </nav>
+</nav>
