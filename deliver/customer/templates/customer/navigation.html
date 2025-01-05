@@ -9,7 +9,7 @@
           <a class="nav-link" href="{% url 'about' %}">About Us</span></a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="#">Menu</a>
+          <a class="nav-link" href="{% url 'account_logout' %}">Log Out</a>
         </li>
       </ul>
       <ul class="navbar-nav d-flex align-items-center">
@@ -35,7 +35,7 @@
           {% endif %}
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="{% url 'order' %}">Place an Order!</a>
+            <a class="nav-link" href="{% url 'customer:merchant_index' %}">Place an Order!</a>
         </li>
       </ul>
 
