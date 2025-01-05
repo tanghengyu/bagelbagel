@@ -54,6 +54,14 @@ class Profile(models.Model):
         return f"{self.user.username} - {self.role}"
 
 class OrderModel(models.Model):
+    STATUS_CHOICES = [
+    ('Pending', 'Pending'),
+    ('Under Preparationp', 'Under Preparation'),    
+    ('Ready for Pickup', 'Ready for Pickup'),
+    ('Delivered', 'Delivered'),
+    ('Completed', 'Completed'),
+    ('Cancelled', 'Cancelled'),
+    ]
     created_on = models.DateTimeField(auto_now_add=True)
     price = models.DecimalField(max_digits=7, decimal_places=2)
     items = models.ManyToManyField('MenuItem', related_name='order', blank=True)
@@ -67,6 +75,11 @@ class OrderModel(models.Model):
     is_paid = models.BooleanField(default=False)
     ready_for_pickup = models.BooleanField(default=False)
 
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='Pending',
+    )
     # New Field: Merchant the order belongs to
     merchant = models.ForeignKey(
         'customer.Profile',  # Assuming Profile is in the same app

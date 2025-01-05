@@ -32,7 +32,11 @@ class CustomSignupForm(forms.Form):  # Do not inherit SignupForm directly
         ('Driver', 'Driver'),
     ]
     role = forms.ChoiceField(choices=ROLE_CHOICES, required=True, label="Role")
-
+    store_location = forms.CharField(
+        required=False,  # Only required for merchants
+        label="Store Location",
+        widget=forms.TextInput(attrs={'placeholder': 'Enter store location'}),
+    )
     def signup(self, request, user):
         """
         This method is called after the user object is created.
@@ -40,7 +44,11 @@ class CustomSignupForm(forms.Form):  # Do not inherit SignupForm directly
         """
         from allauth.account.forms import SignupForm  # Import locally
         role = self.cleaned_data['role']
+        store_location = self.cleaned_data.get('store_location', '')
+
         from customer.models import Profile
         profile = Profile.objects.create(user=user, role=role)
+        if role == 'Merchant':
+            profile.store_location = store_location
         profile.save()
         return profile 

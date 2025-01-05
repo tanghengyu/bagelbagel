@@ -230,10 +230,15 @@ class CustomerProfileView(LoginRequiredMixin, View):
         
 
         shopping_cart = get_object_or_404(ShoppingCartModel, customer=request.user)
+        shopping_cart_total_price = shopping_cart.calculate_total_price()
         cart_items = shopping_cart.cart_items.all() if shopping_cart else [] 
+        if len(cart_items) > 0:
+            for curr_item in cart_items:
+                curr_item.total_price = curr_item.item_total_price()
         context = {
             'current_orders': current_orders,
-            'shopping_cart_items': cart_items
+            'shopping_cart_items': cart_items,
+            'shopping_cart_total_price': shopping_cart_total_price
         }
         return render(request, 'customer/customer_profile.html', context)
         
@@ -253,9 +258,21 @@ class CustomerProfileView(LoginRequiredMixin, View):
         # return render(request, 'customer/customer_profile.html', context)
 class OrderDetailView(LoginRequiredMixin, View):
     def post(self, request, pk, *args, **kwargs):
+        pass
         curr_order = OrderModel.object.filter(pk=pk)
-        curr_order
+        # curr_order
 
+
+class CancelOrderView(LoginRequiredMixin, View):
+    def post(self, request, pk, *args, **kwargs):
+        print('is this executed')
+        # curr_order = get_object_or_404(OrderModel, pk=pk)
+
+        # print('is this executed')
+        # curr_order.status = 'Cancelled'
+        # curr_order.save()
+        # messages.success(request, f"Order #{curr_order.pk} has been successfully canceled.")
+        # return JsonResponse({'success': True, 'order_id': curr_order.pk})
 
 
 class ShoppingCartView(LoginRequiredMixin, View):
