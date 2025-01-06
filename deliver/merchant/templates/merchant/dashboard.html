@@ -76,6 +76,48 @@
             </div>
         </div>
     </div> 
+    <div class="container mt-5">
+        <!-- Current Menu Items Section -->
+        <h3 class="text-center">Current Menu Items</h3>
+        <div class="menu-items-scroll-container">
+            <div class="d-flex flex-row overflow-auto">
+                {% if menu_items %}
+                    {% for item in menu_items %}
+                    <div class="card mb-4 mx-2" style="min-width: 250px;">
+                        <img src="{{ item.image.url }}" class="card-img-top menu-item-image" alt="{{ item.name }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ item.name }}</h5>
+                            <p class="card-text">{{ item.description }}</p>
+                            <p class="card-text"><strong>Price:</strong> ${{ item.price }}</p>
+                            <p class="card-text"><strong>Category:</strong> 
+                                {% for category in item.category.all %}
+                                    {{ category.name }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                            </p>
+                            <strong>Status:</strong>
+                            <form method="POST" action="{% url 'merchant:change_item_status' item.id %}">
+                                {% csrf_token %}
+                                <select class="form-control" name="is_available" onchange="this.form.submit()">
+                                    <option value="True" {% if item.is_available %}selected{% endif %}>Available</option>
+                                    <option value="False" {% if not item.is_available %}selected{% endif %}>Not Available</option>
+                                </select>
+                            </form>
+                            <div class="d-flex justify-content-between">
+                                <form method="POST" action="{% url 'merchant:delete_menu_item' item.id %}" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-center">No menu items available. Add some items to get started!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
     
     <div class="container">
         <!-- Section for Adding Menu Items -->
