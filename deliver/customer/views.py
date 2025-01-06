@@ -264,13 +264,16 @@ class OrderDetailView(LoginRequiredMixin, View):
 
 
 class CancelOrderView(LoginRequiredMixin, View):
-    def post(self, request, pk, *args, **kwargs):
-        print('is this executed')
-        # curr_order = get_object_or_404(OrderModel, pk=pk)
+    def post(self, request, order_id, *args, **kwargs):
+        print(f"Canceling order ID: {order_id}")  # Debug output
+        
+        curr_order = get_object_or_404(OrderModel, pk=order_id)
+        print(f'previous status {curr_order.status}')
+        curr_order.status = 'Cancelled'
+        curr_order.save()
+        print(f'current status {curr_order.status}')
 
-        # print('is this executed')
-        # curr_order.status = 'Cancelled'
-        # curr_order.save()
+        return JsonResponse({'success': True, 'order_id': curr_order.pk})
         # messages.success(request, f"Order #{curr_order.pk} has been successfully canceled.")
         # return JsonResponse({'success': True, 'order_id': curr_order.pk})
 

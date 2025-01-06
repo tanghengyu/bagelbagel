@@ -31,11 +31,12 @@
                             </td>
                             <td>${{ order.price }}</td>
                             <td>
-                                {% if order.ready_for_pickup %}
+                                {{ order.status }}
+                                <!-- {% if order.ready_for_pickup %}
                                     Ready for Pickup
                                 {% else %}
                                     Under Preparation
-                                {% endif %}
+                                {% endif %} -->
                             </td>
                             <td>{{ order.created_on|date:"M d, Y h:i A" }}</td>
                             <td>
@@ -66,12 +67,18 @@
                                                 <p><strong>Placed On:</strong> {{ order.created_on|date:"M d, Y h:i A" }}</p>
                                             </div>
                                             <div class="modal-footer">
-                                                <!-- <form method="POST" action="{% url 'customer:cancel_order' order.pk %}">
+                                                <form method="POST">
                                                     {% csrf_token %}
-                                                    <button type="submit" class="btn btn-danger">Cancel Order</button>
-                                                </form> -->
-
-                                                <button type="button" class="btn btn-danger cancel-order-btn" data-order-id="{{ order.id }}">Cancel Order</button>
+                                                    <button type="button" class="btn btn-danger cancel-order-btn" data-order-id="{{ order.id }}">
+                                                        Cancel Order
+                                                    </button>
+                                                </form>
+                                                <!-- <button type="button" class="btn btn-danger cancel-order-btn" data-order-id="{{ order.id }}">
+                                                    Cancel Order
+                                                </button> -->
+                                                
+<!-- 
+                                                <button type="button" class="btn btn-danger cancel-order-btn" data-order-id="{{ order.id }}">Cancel Order</button> -->
                                                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                                             </div>
                                         </div>
@@ -115,7 +122,8 @@
             </table>
             <div class="text-right">
                 <h5>Total Price: ${{ shopping_cart_total_price }}</h5>
-                <button class="btn btn-success">Checkout</button>
+                <!-- <button class="btn btn-success">Checkout</button> -->
+                <a href="{% url 'customer:customer_shopping_cart' %}" class="btn btn-success">Checkout Here</a>
             </div>
         {% else %}
             <p>Your shopping cart is empty.</p>
@@ -150,39 +158,33 @@
             button.addEventListener("click", function () {
                 const orderId = this.getAttribute("data-order-id");
                 const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-                // Debugging output
-                // console.log("CSRF Token:", csrfToken);
-                console.log("Order ID:", orderId);
 
-                // fetch(`/customer/cancel-order/${orderId}/`, {
-                //     method: "POST",
-                //     headers: {
-                //         "Content-Type": "application/json",
-                //         "X-CSRFToken": csrfToken,
-                //     },
-                // })
+                console.log("Order ID:", orderId); // Debugging output
 
-                $(`#viewOrderDetail${orderId}`).modal('hide');
-                $('#cancelConfirmationModal').modal('show');
-                
-
-
-                // .then(response => response.json())
-                // .then(data => {
-                //     if (data.success) {
-                //         // Close the current modal
-                //         $(`#viewOrderDetail${orderId}`).modal('hide');
-                //         // Show the confirmation modal
-                //         $('#cancelConfirmationModal').modal('show');
-                //         // Optionally refresh the page after confirmation
-                //         setTimeout(() => {
-                //             location.reload();
-                //         }, 2000);
-                //     } else {
-                //         alert("Failed to cancel the order. Please try again.");
-                //     }
-                // })
-                // .catch(error => console.error("Error canceling order:", error));
+                fetch(`/customer/cancel-order/${orderId}/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrfToken,
+                    },
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Response data:", data); // Debugging output
+                    if (data.success) {
+                        $(`#viewOrderDetail${orderId}`).modal('hide');
+                        $('#cancelConfirmationModal').modal('show');
+                        setTimeout(() => location.reload(), 2000);
+                    } else {
+                        alert("Cancellation failed. Please try again.");
+                    }
+                })
+                .catch(error => console.error("Error canceling order:", error));
             });
         });
     });
