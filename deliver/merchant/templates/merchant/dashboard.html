@@ -16,7 +16,30 @@
     {% endif %}
 
 </div>
-
+<div class="dropdown notification-dropdown">
+    <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="notificationDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <i class="fas fa-inbox"></i>
+        {% if notifications_count > 0 %}
+            <span class="badge badge-danger">{{ notifications_count }}</span>
+        {% endif %}
+    </a>
+    <div class="dropdown-menu" aria-labelledby="notificationDropdown">
+        {% if notifications %}
+            {% for notification in notifications %}
+                <div class="dropdown-item">
+                    <p>{{ notification.message }}</p>
+                    <form method="POST" action="{% url 'merchant:accept_order' notification.order.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-sm">Accept</button>
+                        <a href="{% url 'merchant:decline_order' notification.order.id %}" class="btn btn-danger btn-sm">Decline</a>
+                    </form>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p class="dropdown-item">No new notifications</p>
+        {% endif %}
+    </div>
+</div>
 
 
 

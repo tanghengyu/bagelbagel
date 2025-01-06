@@ -5,7 +5,7 @@ from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin #
 from django.utils.timezone import datetime
 from django.contrib import messages  # Import the messages module
 
-from customer.models import OrderModel, Profile, MenuItem, Category
+from customer.models import OrderModel, Profile, MenuItem, Category, Notification
 # Create your views here.
 
 
@@ -24,12 +24,15 @@ class MerchantDashboard(LoginRequiredMixin,  UserPassesTestMixin, View):
 
 
         menu_items = MenuItem.objects.filter(merchant=merchant)
-
+        notifications = Notification.objects.filter(merchant=merchant, is_read=False)
+        notifications_count = notifications.count()
         # categories = Category.objects.all()
         categories = Category.objects.filter(merchant=merchant)
         # pass total number of orders and total revenus into template 
         context = {
             'merchant': merchant,
+            'notifications': notifications,
+            'notifications_count': notifications_count,
             'orders': orders, 
             'total_revenue': total_revenue,
             'total_orders': len(orders), 
@@ -138,7 +141,28 @@ class DeleteMenuItem(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
         # Restrict access to only merchants
         return self.request.user.profile.role == 'Merchant'
-    
+class AcceptOrderView(LoginRequiredMixin, View):
+    def post(self, request, order_id, *args, **kwargs):
+        order = get_object_or_404(OrderModel, pk=order_id, merchant=request.user.profile)
+        order.status = 'Under Preparation'
+        order.save()
+
+        # Mark the related notification as read
+        Notification.objects.filter(order=order).update(is_read=True)
+
+        return redirect('merchant:merchant_dashboard')
+
+
+class DeclineOrderView(LoginRequiredMixin, View):
+    def get(self, request, order_id, *args, **kwargs):
+        order = get_object_or_404(OrderModel, pk=order_id, merchant=request.user.profile)
+        order.status = 'Cancelled'
+        order.save()
+
+        # Mark the related notification as read
+        Notification.objects.filter(order=order).update(is_read=True)
+
+        return redirect('merchant:merchant_dashboard')
 class OrderDetails(LoginRequiredMixin, UserPassesTestMixin, View):
     def get(self, request, pk, *args, **kwargs):
         order = OrderModel.objects.get(pk=pk)

@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View 
 from django.core.mail import send_mail
-from .models import MenuItem, Category, OrderModel, Profile, ShoppingCartModel, CartItem
+from .models import MenuItem, Category, OrderModel, Profile, ShoppingCartModel, CartItem, Notification
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin # validate the request based on 
@@ -361,7 +361,13 @@ class ShoppingCartView(LoginRequiredMixin, View):
         # for item in order_items['items']:
         #     price += item['price']
         #     item_ids.append(item['id'])
-
+        
+        # Create a notification for the merchant
+        Notification.objects.create(
+            merchant=order_merchant,
+            order=order,
+            message=f"New order #{order.id} has been placed by {order_customer.user.username}."
+        )
         return redirect('order-confirmation', pk=order.pk)
 
 
