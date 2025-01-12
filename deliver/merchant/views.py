@@ -155,7 +155,7 @@ class AcceptOrderView(LoginRequiredMixin, View):
             sender=order_merchant,  # The customer who placed the order
             recipient=order.customer,  # The merchant receiving the notification
             order=order,
-            message=f"New order #{order.id} has been placed by {order.customer.user.username}."
+            message=f"Your order #{order.id} has been accepted by {order.merchant.user.username}."
         )
         # Notify all available drivers
         available_drivers = Profile.objects.filter(role='Driver')

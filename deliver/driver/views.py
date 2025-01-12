@@ -4,14 +4,19 @@ from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin #
 from customer.models import OrderModel, Message
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
+from django.db.models import Q
 
 # Create your views here.
 class DriverDashboardView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         driver = request.user.profile
-        pending_orders = OrderModel.objects.filter(driver=driver, status='Assigned to Driver')
+        pending_orders = OrderModel.objects.filter(driver=driver).filter(
+            Q(status='Under Preparation') | Q(status='Ready for Pickup') | Q(status='Order On the Way'))
         delivered_orders = OrderModel.objects.filter(driver=driver, status='Delivered')
-        notifications = Message.objects.filter(recipient=driver, is_read=False)
+        # notifications = Message.objects.filter(recipient=driver, is_read=False)
+        notifications = Message.objects.filter(recipient=driver, is_read=False).filter(
+            Q(order__driver__isnull=True) | Q(order__driver=driver)
+        )
         for notification in notifications:
             if notification.order:
                 notification.show_action_buttons = (
