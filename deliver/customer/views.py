@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views import View 
 from django.core.mail import send_mail
-from .models import MenuItem, Category, OrderModel, Profile, ShoppingCartModel, CartItem
+from .models import MenuItem, Category, OrderModel, Profile, ShoppingCartModel, CartItem, Message
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin # validate the request based on 
@@ -235,7 +235,10 @@ class CustomerProfileView(LoginRequiredMixin, View):
         if len(cart_items) > 0:
             for curr_item in cart_items:
                 curr_item.total_price = curr_item.item_total_price()
+        curr_customer = get_object_or_404(Profile, user=request.user, role='Customer')
         context = {
+            # 'notifications': notifications,
+            # 'notifications_count': notifications_count,
             'current_orders': current_orders,
             'shopping_cart_items': cart_items,
             'shopping_cart_total_price': shopping_cart_total_price
@@ -361,7 +364,14 @@ class ShoppingCartView(LoginRequiredMixin, View):
         # for item in order_items['items']:
         #     price += item['price']
         #     item_ids.append(item['id'])
-
+        
+        # Create a notification for the merchant
+        Message.objects.create(
+            sender=order_customer,  # The customer who placed the order
+            recipient=order_merchant,  # The merchant receiving the notification
+            order=order,
+            message=f"New order #{order.id} has been placed by {order_customer.user.username}."
+        )
         return redirect('order-confirmation', pk=order.pk)
 
 
