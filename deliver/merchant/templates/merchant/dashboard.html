@@ -75,6 +75,7 @@
 
                     <tbody>
                         {% for order in orders %}
+                        {% if order.status != 'Pending' %}
                         <tr>
                             <th scope="row">{{ order.pk }}</th>
                             <td>{{order.price}}</td>
@@ -93,6 +94,7 @@
                             </td>
                             <td><a href="{% url 'merchant:order-details' order.pk %}"><i class="fas fa-edit"></i></a></td>
                         </tr>
+                        {% endif %}
                         {% endfor %}
                     </tbody>
                 </table>

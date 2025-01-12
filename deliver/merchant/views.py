@@ -5,7 +5,7 @@ from django.contrib.auth.mixins import UserPassesTestMixin, LoginRequiredMixin #
 from django.utils.timezone import datetime
 from django.contrib import messages  # Import the messages module
 
-from customer.models import OrderModel, Profile, MenuItem, Category, Notification
+from customer.models import OrderModel, Profile, MenuItem, Category, Message
 # Create your views here.
 
 
@@ -24,7 +24,7 @@ class MerchantDashboard(LoginRequiredMixin,  UserPassesTestMixin, View):
 
 
         menu_items = MenuItem.objects.filter(merchant=merchant)
-        notifications = Notification.objects.filter(merchant=merchant, is_read=False)
+        notifications = Message.objects.filter(recipient=merchant, is_read=False)
         notifications_count = notifications.count()
         # categories = Category.objects.all()
         categories = Category.objects.filter(merchant=merchant)
@@ -148,8 +148,8 @@ class AcceptOrderView(LoginRequiredMixin, View):
         order.save()
 
         # Mark the related notification as read
-        Notification.objects.filter(order=order).update(is_read=True)
-
+        Message.objects.filter(order=order).update(is_read=True)
+        # order_merchant = Profile.objects.get(user=request.user, role='Merchant')
         return redirect('merchant:merchant_dashboard')
 
 
@@ -160,7 +160,7 @@ class DeclineOrderView(LoginRequiredMixin, View):
         order.save()
 
         # Mark the related notification as read
-        Notification.objects.filter(order=order).update(is_read=True)
+        Message.objects.filter(order=order).update(is_read=True)
 
         return redirect('merchant:merchant_dashboard')
 class OrderDetails(LoginRequiredMixin, UserPassesTestMixin, View):

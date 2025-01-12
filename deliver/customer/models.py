@@ -99,15 +99,44 @@ class OrderModel(models.Model):
     )
     def __str__(self):
         return f'Order: {self.created_on.strftime("%b %d %I: %M %p")}'
-class Notification(models.Model):
-    merchant = models.ForeignKey('Profile', on_delete=models.CASCADE, related_name='notifications')
-    order = models.ForeignKey('OrderModel', on_delete=models.CASCADE, related_name='notifications')
-    message = models.CharField(max_length=255)
+# class Notification(models.Model):
+#     merchant = models.ForeignKey('Profile', on_delete=models.CASCADE, related_name='notifications')
+#     order = models.ForeignKey('OrderModel', on_delete=models.CASCADE, related_name='notifications')
+#     message = models.CharField(max_length=255)
+#     is_read = models.BooleanField(default=False)
+#     created_on = models.DateTimeField(auto_now_add=True)
+
+#     def __str__(self):
+#         return f"Notification for {self.merchant.user.username}: {self.message}"
+
+class Message(models.Model):
+    sender = models.ForeignKey(
+        'Profile',
+        on_delete=models.CASCADE,
+        related_name='sent_notifications',
+        help_text="The user sending the notification"
+    )
+    recipient = models.ForeignKey(
+        'Profile',
+        on_delete=models.CASCADE,
+        related_name='received_notifications',
+        help_text="The user receiving the notification"
+    )
+    order = models.ForeignKey(
+        'OrderModel',
+        on_delete=models.CASCADE,
+        related_name='notifications',
+        null=True,
+        blank=True,
+        help_text="Associated order for the notification"
+    )
+    message = models.CharField(max_length=255, help_text="Notification message")
     is_read = models.BooleanField(default=False)
     created_on = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Notification for {self.merchant.user.username}: {self.message}"
+        return f"Notification from {self.sender.user.username} to {self.recipient.user.username}: {self.message}"
+
     
 class ShoppingCartModel(models.Model):
     customer = models.OneToOneField(

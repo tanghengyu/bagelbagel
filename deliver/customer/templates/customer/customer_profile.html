@@ -3,7 +3,31 @@
 {% block content %}
 <div class="container my-5">
     <h2 class="text-center">Customer Profile</h2>
-    
+    <!-- Notifications Section -->
+    <div class="mt-4">
+        <h3>Notifications</h3>
+        <div class="dropdown notification-dropdown">
+            <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="notificationDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-inbox"></i>
+                {% if notifications_count > 0 %}
+                    <span class="badge badge-danger">{{ notifications_count }}</span>
+                {% endif %}
+            </a>
+            <div class="dropdown-menu" aria-labelledby="notificationDropdown">
+                {% if notifications %}
+                    {% for notification in notifications %}
+                        <div class="dropdown-item">
+                            <p>{{ notification.message }}</p>
+                            <small class="text-muted">Received: {{ notification.created_on|date:"M d, Y h:i A" }}</small>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="dropdown-item">No new notifications</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
     <!-- Current Orders Section -->
     <div class="mt-4">
         <h3>Current Orders</h3>
