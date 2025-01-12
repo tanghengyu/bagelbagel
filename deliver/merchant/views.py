@@ -149,7 +149,23 @@ class AcceptOrderView(LoginRequiredMixin, View):
 
         # Mark the related notification as read
         Message.objects.filter(order=order).update(is_read=True)
-        # order_merchant = Profile.objects.get(user=request.user, role='Merchant')
+        order_merchant = Profile.objects.get(user=request.user, role='Merchant')
+        
+        Message.objects.create(
+            sender=order_merchant,  # The customer who placed the order
+            recipient=order.customer,  # The merchant receiving the notification
+            order=order,
+            message=f"Your order #{order.id} has been accepted by {order.merchant.user.username}."
+        )
+        # Notify all available drivers
+        available_drivers = Profile.objects.filter(role='Driver')
+        for driver in available_drivers:
+            Message.objects.create(
+                sender=request.user.profile,  # Merchant sending the notification
+                recipient=driver,  # Driver receiving the notification
+                order=order,
+                message=f"New order #{order.id} from {order.merchant.user.username} is available for delivery."
+            )
         return redirect('merchant:merchant_dashboard')
 
 

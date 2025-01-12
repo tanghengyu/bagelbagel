@@ -236,9 +236,11 @@ class CustomerProfileView(LoginRequiredMixin, View):
             for curr_item in cart_items:
                 curr_item.total_price = curr_item.item_total_price()
         curr_customer = get_object_or_404(Profile, user=request.user, role='Customer')
+        notifications = Message.objects.filter(recipient=curr_customer, is_read=False)
+        notifications_count = notifications.count()
         context = {
-            # 'notifications': notifications,
-            # 'notifications_count': notifications_count,
+            'notifications': notifications,
+            'notifications_count': notifications_count,
             'current_orders': current_orders,
             'shopping_cart_items': cart_items,
             'shopping_cart_total_price': shopping_cart_total_price
@@ -383,3 +385,10 @@ class RemoveFromCartView(LoginRequiredMixin, View):
             cart_item = get_object_or_404(shopping_cart.cart_items, id=item_id)
             cart_item.delete()
         return redirect('customer:customer_shopping_cart')
+
+class MarkNotificationReadView(LoginRequiredMixin, View):
+    def post(self, request, notification_id, *args, **kwargs):
+        notification = get_object_or_404(Message, pk=notification_id, recipient=request.user.profile)
+        notification.is_read = True
+        notification.save()
+        return JsonResponse({'success': True})

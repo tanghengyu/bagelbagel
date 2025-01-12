@@ -58,6 +58,7 @@ class OrderModel(models.Model):
     ('Pending', 'Pending'),
     ('Under Preparationp', 'Under Preparation'),    
     ('Ready for Pickup', 'Ready for Pickup'),
+    ('Order On the Way', 'Order On the Way'),
     ('Delivered', 'Delivered'),
     ('Completed', 'Completed'),
     ('Cancelled', 'Cancelled'),
@@ -97,6 +98,17 @@ class OrderModel(models.Model):
         null=True,
         blank=True
     )
+    # New Field: Driver assigned to deliver the order
+    driver = models.ForeignKey(
+        'customer.Profile',
+        on_delete=models.SET_NULL,
+        related_name='orders_driver',
+        limit_choices_to={'role': 'Driver'},
+        null=True,
+        blank=True,
+        help_text="The driver assigned to deliver this order"
+    )
+
     def __str__(self):
         return f'Order: {self.created_on.strftime("%b %d %I: %M %p")}'
 # class Notification(models.Model):
