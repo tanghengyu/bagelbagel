@@ -228,6 +228,7 @@ class CustomerProfileView(LoginRequiredMixin, View):
         # orders = OrderModel.objects.filter(created_on__year=today.year, created_on__month=today.month, created_on__day__lte=today.day,
         #                                    merchant=merchant)
         
+        delivered_orders = OrderModel.objects.filter(customer=curr_customer, status='Delivered')
 
         shopping_cart = get_object_or_404(ShoppingCartModel, customer=request.user)
         shopping_cart_total_price = shopping_cart.calculate_total_price()
@@ -242,6 +243,7 @@ class CustomerProfileView(LoginRequiredMixin, View):
             'notifications': notifications,
             'notifications_count': notifications_count,
             'current_orders': current_orders,
+            'delivered_orders': delivered_orders,
             'shopping_cart_items': cart_items,
             'shopping_cart_total_price': shopping_cart_total_price
         }
@@ -407,3 +409,35 @@ class MarkNotificationReadView(LoginRequiredMixin, View):
         notification.is_read = True
         notification.save()
         return JsonResponse({'success': True})
+    
+class RateOrderView(LoginRequiredMixin, View):
+    def post(self, request, order_id, *args, **kwargs):
+        order = get_object_or_404(OrderModel, pk=order_id, customer=request.user.profile)
+
+        # Retrieve the rating and comment from the form
+        rating = int(request.POST.get('rating'))
+        comment = request.POST.get('comment', '')
+
+        # Update the order with the rating and comment
+        order.rating = rating
+        order.rating_comment = comment
+        order.save()
+
+        # Notify the merchant and driver about the rating
+        if order.merchant:
+            Message.objects.create(
+                sender=request.user.profile,
+                recipient=order.merchant,
+                order=order,
+                message=f"Order #{order.id} has been rated {rating} stars by the customer."
+            )
+
+        if order.driver:
+            Message.objects.create(
+                sender=request.user.profile,
+                recipient=order.driver,
+                order=order,
+                message=f"Order #{order.id} has been rated {rating} stars by the customer."
+            )
+
+        return redirect('customer:customer_profile')

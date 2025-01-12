@@ -108,6 +108,8 @@ class OrderModel(models.Model):
         blank=True,
         help_text="The driver assigned to deliver this order"
     )
+    rating = models.PositiveIntegerField(null=True, blank=True, help_text="Rating given by the customer (1-5)")
+    rating_comment = models.TextField(null=True, blank=True, help_text="Optional comment for the rating")
 
     def __str__(self):
         return f'Order: {self.created_on.strftime("%b %d %I: %M %p")}'
