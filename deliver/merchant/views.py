@@ -164,7 +164,8 @@ class AcceptOrderView(LoginRequiredMixin, View):
                 sender=request.user.profile,  # Merchant sending the notification
                 recipient=driver,  # Driver receiving the notification
                 order=order,
-                message=f"New order #{order.id} from {order.merchant.user.username} is available for delivery."
+                message=f"New order #{order.id} from {order.merchant.user.username} is available for delivery.",
+                requires_action=True
             )
         return redirect('merchant:merchant_dashboard')
 
@@ -192,7 +193,12 @@ class OrderDetails(LoginRequiredMixin, UserPassesTestMixin, View):
         order.ready_for_pickup=True 
         order.status = 'Ready for Pickup'
         order.save()
-
+        Message.objects.create(
+            sender=request.user.profile,  # Merchant sending the notification
+            recipient=order.driver,  # Driver receiving the notification
+            order=order,
+            message=f"Order #{order.id} from {order.merchant.user.username} is ready for pick up."
+        )
         context = {'order': order}
 
         return render(request, 'merchant/order_details.html', context )

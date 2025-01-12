@@ -145,6 +145,8 @@ class Message(models.Model):
     message = models.CharField(max_length=255, help_text="Notification message")
     is_read = models.BooleanField(default=False)
     created_on = models.DateTimeField(auto_now_add=True)
+    requires_action = models.BooleanField(default=False, help_text="Does this message require recipient action?")
+
 
     def __str__(self):
         return f"Notification from {self.sender.user.username} to {self.recipient.user.username}: {self.message}"

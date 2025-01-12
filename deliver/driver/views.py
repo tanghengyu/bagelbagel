@@ -45,6 +45,14 @@ class MarkOrderDeliveredView(LoginRequiredMixin, View):
     def post(self, request, order_id, *args, **kwargs):
         order = get_object_or_404(OrderModel, pk=order_id)
         order.status = 'Delivered'
+        order.save()
+        Message.objects.create(
+            sender=order.driver,  # The customer who placed the order
+            recipient=order.customer,  # The merchant receiving the notification
+            order=order,
+            message=f"Order #{order.id} has been delivered by {order.driver.user.username}.", 
+            requires_action=False
+        )
         return redirect('driver:driver_dashboard')
     
 class AcceptDeliveryView(LoginRequiredMixin, View):

@@ -277,7 +277,21 @@ class CancelOrderView(LoginRequiredMixin, View):
         curr_order.status = 'Cancelled'
         curr_order.save()
         print(f'current status {curr_order.status}')
-
+        Message.objects.create(
+            sender=curr_order.customer,  # The customer who placed the order
+            recipient=curr_order.merchant,  # The merchant receiving the notification
+            order=curr_order,
+            message=f"Order #{curr_order.id} has been cancelled by {curr_order.customer.user.username}.", 
+            requires_action=False
+        )
+        if curr_order.driver is not None:
+            Message.objects.create(
+                sender=curr_order.customer,  # The customer who placed the order
+                recipient=curr_order.driver,  # The merchant receiving the notification
+                order=curr_order,
+                message=f"Order #{curr_order.id} has been cancelled by {curr_order.customer.user.username}.", 
+                requires_action=False
+            )
         return JsonResponse({'success': True, 'order_id': curr_order.pk})
         # messages.success(request, f"Order #{curr_order.pk} has been successfully canceled.")
         # return JsonResponse({'success': True, 'order_id': curr_order.pk})
@@ -372,7 +386,8 @@ class ShoppingCartView(LoginRequiredMixin, View):
             sender=order_customer,  # The customer who placed the order
             recipient=order_merchant,  # The merchant receiving the notification
             order=order,
-            message=f"New order #{order.id} has been placed by {order_customer.user.username}."
+            message=f"New order #{order.id} has been placed by {order_customer.user.username}.", 
+            requires_action=True
         )
         return redirect('order-confirmation', pk=order.pk)
 
