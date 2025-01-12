@@ -1,0 +1,160 @@
+{% extends 'customer/base.html' %}
+{% block content %}
+<div class="container my-5">
+    <h2 class="text-center">Driver Dashboard</h2>
+
+    <!-- Notification Center -->
+    <div class="mt-4">
+        <h3>Notification Center</h3>
+        <div class="dropdown notification-dropdown">
+            <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="notificationDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <i class="fas fa-bell"></i>
+                {% if notifications_count > 0 %}
+                    <span class="badge badge-danger">{{ notifications_count }}</span>
+                {% endif %}
+            </a>
+            <div class="dropdown-menu" aria-labelledby="notificationDropdown">
+                {% if notifications %}
+                    {% for notification in notifications %}
+                        <div class="dropdown-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <p>{{ notification.message }}</p>
+                                <small class="text-muted">Received: {{ notification.created_on|date:"M d, Y h:i A" }}</small>
+                            </div>
+                            {% if notification.show_action_buttons %}
+                            <!-- Accept and Decline Buttons for Orders -->
+                                <div class="d-flex">
+                                    <form method="POST" action="{% url 'driver:accept_delivery' notification.order.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-success">Accept</button>
+                                    </form>
+                                    <form method="POST" action="{% url 'driver:decline_delivery' notification.order.id %}" class="ml-2">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-danger">Decline</button>
+                                    </form>
+                                </div>
+                            {% else %}
+                                <!-- Close Icon for General Notifications -->
+                                <button class="btn btn-sm btn-link text-danger mark-as-read-btn" data-notification-id="{{ notification.id }}">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="dropdown-item">No new notifications</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Orders Section -->
+    <div class="mt-5">
+        <h3>Pending Deliveries</h3>
+        {% if pending_orders %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Merchant</th>
+                        <th>Customer</th>
+                        <th>Delivery Address</th>
+                        <th>Total Price</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in pending_orders %}
+                        <tr>
+                            <td>{{ order.id }}</td>
+                            <td>{{ order.merchant.user.username }}</td>
+                            <td>{{ order.customer.user.username }}</td>
+                            <td>{{ order.street }}, {{ order.city }}, {{ order.state }}, {{ order.zip_code }}</td>
+                            <td>${{ order.price }}</td>
+                            <td>
+                                <form method="POST" action="{% url 'driver:mark_order_delivered' order.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-success btn-sm">Mark as Delivered</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No pending deliveries.</p>
+        {% endif %}
+    </div>
+
+    <!-- Delivered Orders Section -->
+    <div class="mt-5">
+        <h3>Delivered Orders</h3>
+        {% if delivered_orders %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Order ID</th>
+                        <th>Customer</th>
+                        <th>Delivery Address</th>
+                        <th>Total Price</th>
+                        <th>Delivered On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for order in delivered_orders %}
+                        <tr>
+                            <td>{{ order.id }}</td>
+                            <td>{{ order.customer.user.username }}</td>
+                            <td>{{ order.street }}, {{ order.city }}, {{ order.state }}, {{ order.zip_code }}</td>
+                            <td>${{ order.price }}</td>
+                            <td>{{ order.updated_at|date:"M d, Y h:i A" }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No delivered orders.</p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const markAsReadButtons = document.querySelectorAll(".mark-as-read-btn");
+
+        markAsReadButtons.forEach(button => {
+            button.addEventListener("click", function () {
+                const notificationId = this.getAttribute("data-notification-id");
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                fetch(`/driver/mark-notification-read/${notificationId}/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrfToken,
+                    },
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        this.closest(".dropdown-item").remove(); // Remove the notification from the dropdown
+                        const badge = document.querySelector(".notification-dropdown .badge");
+                        if (badge) {
+                            const count = parseInt(badge.textContent, 10) - 1;
+                            badge.textContent = count > 0 ? count : ""; // Update the badge count
+                        }
+                    } else {
+                        alert("Failed to mark notification as read.");
+                    }
+                })
+                .catch(error => console.error("Error marking notification as read:", error));
+            });
+        });
+    });
+</script>
+{% endblock content %}

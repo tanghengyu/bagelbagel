@@ -13,9 +13,14 @@
         <div class="dropdown-menu" aria-labelledby="notificationDropdown">
             {% if notifications %}
                 {% for notification in notifications %}
-                    <div class="dropdown-item">
-                        <p>{{ notification.message }}</p>
-                        <small class="text-muted">Received: {{ notification.created_on|date:"M d, Y h:i A" }}</small>
+                    <div class="dropdown-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <p>{{ notification.message }}</p>
+                            <small class="text-muted">Received: {{ notification.created_on|date:"M d, Y h:i A" }}</small>
+                        </div>
+                        <button class="btn btn-sm btn-link text-danger mark-as-read-btn" data-notification-id="{{ notification.id }}">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
                 {% endfor %}
             {% else %}
@@ -212,4 +217,44 @@
         });
     });
 </script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const markAsReadButtons = document.querySelectorAll(".mark-as-read-btn");
+
+        markAsReadButtons.forEach(button => {
+            button.addEventListener("click", function () {
+                const notificationId = this.getAttribute("data-notification-id");
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+                fetch(`/customer/mark-notification-read/${notificationId}/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrfToken,
+                    },
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        this.closest(".dropdown-item").remove(); // Remove the notification from the dropdown
+                        const badge = document.querySelector(".notification-dropdown .badge");
+                        if (badge) {
+                            const count = parseInt(badge.textContent, 10) - 1;
+                            badge.textContent = count > 0 ? count : ""; // Update the badge count
+                        }
+                    } else {
+                        alert("Failed to mark notification as read.");
+                    }
+                })
+                .catch(error => console.error("Error marking notification as read:", error));
+            });
+        });
+    });
+</script>
+
 {% endblock %}

@@ -385,3 +385,10 @@ class RemoveFromCartView(LoginRequiredMixin, View):
             cart_item = get_object_or_404(shopping_cart.cart_items, id=item_id)
             cart_item.delete()
         return redirect('customer:customer_shopping_cart')
+
+class MarkNotificationReadView(LoginRequiredMixin, View):
+    def post(self, request, notification_id, *args, **kwargs):
+        notification = get_object_or_404(Message, pk=notification_id, recipient=request.user.profile)
+        notification.is_read = True
+        notification.save()
+        return JsonResponse({'success': True})

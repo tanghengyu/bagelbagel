@@ -24,7 +24,7 @@
                     <i class="fas fa-user"></i>
                 </a>
             {% elif user.profile.role == "Driver" %}
-                <a href="{% url 'driver:dashboard' %}" class="nav-link">
+                <a href="{% url 'driver:driver_dashboard' %}" class="nav-link">
                     <i class="fas fa-user"></i>
                 </a>
             {% endif %}
