@@ -108,6 +108,8 @@ class OrderModel(models.Model):
         blank=True,
         help_text="The driver assigned to deliver this order"
     )
+    rating = models.PositiveIntegerField(null=True, blank=True, help_text="Rating given by the customer (1-5)")
+    rating_comment = models.TextField(null=True, blank=True, help_text="Optional comment for the rating")
 
     def __str__(self):
         return f'Order: {self.created_on.strftime("%b %d %I: %M %p")}'
@@ -145,6 +147,8 @@ class Message(models.Model):
     message = models.CharField(max_length=255, help_text="Notification message")
     is_read = models.BooleanField(default=False)
     created_on = models.DateTimeField(auto_now_add=True)
+    requires_action = models.BooleanField(default=False, help_text="Does this message require recipient action?")
+
 
     def __str__(self):
         return f"Notification from {self.sender.user.username} to {self.recipient.user.username}: {self.message}"

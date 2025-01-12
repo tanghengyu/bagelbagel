@@ -228,6 +228,7 @@ class CustomerProfileView(LoginRequiredMixin, View):
         # orders = OrderModel.objects.filter(created_on__year=today.year, created_on__month=today.month, created_on__day__lte=today.day,
         #                                    merchant=merchant)
         
+        delivered_orders = OrderModel.objects.filter(customer=curr_customer, status='Delivered')
 
         shopping_cart = get_object_or_404(ShoppingCartModel, customer=request.user)
         shopping_cart_total_price = shopping_cart.calculate_total_price()
@@ -242,6 +243,7 @@ class CustomerProfileView(LoginRequiredMixin, View):
             'notifications': notifications,
             'notifications_count': notifications_count,
             'current_orders': current_orders,
+            'delivered_orders': delivered_orders,
             'shopping_cart_items': cart_items,
             'shopping_cart_total_price': shopping_cart_total_price
         }
@@ -277,7 +279,21 @@ class CancelOrderView(LoginRequiredMixin, View):
         curr_order.status = 'Cancelled'
         curr_order.save()
         print(f'current status {curr_order.status}')
-
+        Message.objects.create(
+            sender=curr_order.customer,  # The customer who placed the order
+            recipient=curr_order.merchant,  # The merchant receiving the notification
+            order=curr_order,
+            message=f"Order #{curr_order.id} has been cancelled by {curr_order.customer.user.username}.", 
+            requires_action=False
+        )
+        if curr_order.driver is not None:
+            Message.objects.create(
+                sender=curr_order.customer,  # The customer who placed the order
+                recipient=curr_order.driver,  # The merchant receiving the notification
+                order=curr_order,
+                message=f"Order #{curr_order.id} has been cancelled by {curr_order.customer.user.username}.", 
+                requires_action=False
+            )
         return JsonResponse({'success': True, 'order_id': curr_order.pk})
         # messages.success(request, f"Order #{curr_order.pk} has been successfully canceled.")
         # return JsonResponse({'success': True, 'order_id': curr_order.pk})
@@ -372,7 +388,8 @@ class ShoppingCartView(LoginRequiredMixin, View):
             sender=order_customer,  # The customer who placed the order
             recipient=order_merchant,  # The merchant receiving the notification
             order=order,
-            message=f"New order #{order.id} has been placed by {order_customer.user.username}."
+            message=f"New order #{order.id} has been placed by {order_customer.user.username}.", 
+            requires_action=True
         )
         return redirect('order-confirmation', pk=order.pk)
 
@@ -392,3 +409,35 @@ class MarkNotificationReadView(LoginRequiredMixin, View):
         notification.is_read = True
         notification.save()
         return JsonResponse({'success': True})
+    
+class RateOrderView(LoginRequiredMixin, View):
+    def post(self, request, order_id, *args, **kwargs):
+        order = get_object_or_404(OrderModel, pk=order_id, customer=request.user.profile)
+
+        # Retrieve the rating and comment from the form
+        rating = int(request.POST.get('rating'))
+        comment = request.POST.get('comment', '')
+
+        # Update the order with the rating and comment
+        order.rating = rating
+        order.rating_comment = comment
+        order.save()
+
+        # Notify the merchant and driver about the rating
+        if order.merchant:
+            Message.objects.create(
+                sender=request.user.profile,
+                recipient=order.merchant,
+                order=order,
+                message=f"Order #{order.id} has been rated {rating} stars by the customer."
+            )
+
+        if order.driver:
+            Message.objects.create(
+                sender=request.user.profile,
+                recipient=order.driver,
+                order=order,
+                message=f"Order #{order.id} has been rated {rating} stars by the customer."
+            )
+
+        return redirect('customer:customer_profile')
