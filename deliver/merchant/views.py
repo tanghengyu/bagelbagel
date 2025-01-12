@@ -149,7 +149,15 @@ class AcceptOrderView(LoginRequiredMixin, View):
 
         # Mark the related notification as read
         Message.objects.filter(order=order).update(is_read=True)
-        # order_merchant = Profile.objects.get(user=request.user, role='Merchant')
+        order_merchant = Profile.objects.get(user=request.user, role='Merchant')
+        
+        Message.objects.create(
+            sender=order_merchant,  # The customer who placed the order
+            recipient=order.customer,  # The merchant receiving the notification
+            order=order,
+            message=f"New order #{order.id} has been placed by {order.customer.user.username}."
+        )
+
         return redirect('merchant:merchant_dashboard')
 
 

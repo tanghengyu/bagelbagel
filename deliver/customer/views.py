@@ -236,9 +236,11 @@ class CustomerProfileView(LoginRequiredMixin, View):
             for curr_item in cart_items:
                 curr_item.total_price = curr_item.item_total_price()
         curr_customer = get_object_or_404(Profile, user=request.user, role='Customer')
+        notifications = Message.objects.filter(recipient=curr_customer, is_read=False)
+        notifications_count = notifications.count()
         context = {
-            # 'notifications': notifications,
-            # 'notifications_count': notifications_count,
+            'notifications': notifications,
+            'notifications_count': notifications_count,
             'current_orders': current_orders,
             'shopping_cart_items': cart_items,
             'shopping_cart_total_price': shopping_cart_total_price
