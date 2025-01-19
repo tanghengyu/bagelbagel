@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import CustomerProfileView, ShoppingCartView,RemoveFromCartView, MerchantIndexView, MerchantOrderView, OrderDetailView, CancelOrderView,MarkNotificationReadView, RateOrderView
+from .views import CustomerProfileView, ShoppingCartView,RemoveFromCartView, MerchantIndexView, MerchantOrderView, OrderDetailView, CancelOrderView,MarkNotificationReadView, RateOrderView, TrackDeliveryView
 app_name = 'customer'
 urlpatterns = [
     path('profile/', CustomerProfileView.as_view(), name='customer_profile'),
@@ -11,6 +11,7 @@ urlpatterns = [
     path('cancel-order/<int:order_id>/', CancelOrderView.as_view(), name='cancel_order'),
     path('mark-notification-read/<int:notification_id>/', MarkNotificationReadView.as_view(), name='mark_notification_read'),
     path('order/<int:order_id>/rate/', RateOrderView.as_view(), name='rate_order'),
+    path('order/<int:order_id>/track/', TrackDeliveryView.as_view(), name='track_delivery'),
 
 
 

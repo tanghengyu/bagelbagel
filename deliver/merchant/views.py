@@ -196,7 +196,34 @@ class MarkNotificationReadView(View):
 
         # Respond with success
         return JsonResponse({'success': True})
-    
+
+class ChangeOrderStatusView(View):
+    def post(self, request, pk, *args, **kwargs):
+        # Fetch the order
+        order = get_object_or_404(OrderModel, pk=pk)
+
+        # Ensure the order is currently "Ready for Pickup"
+        if order.status != 'Ready for Pickup':
+            return redirect(request.META.get('HTTP_REFERER', '/'))
+
+        # Determine if the user is authorized (merchant or driver)
+        if request.user.profile.role == 'Merchant' and order.merchant == request.user.profile:
+            order.status = 'Order On the Way'
+            order.save()
+
+        else:
+            return redirect(request.META.get('HTTP_REFERER', '/'))
+
+        # Notify the customer about the status change
+        Message.objects.create(
+            sender=request.user.profile,
+            recipient=order.customer,
+            order=order,
+            message=f"Your order #{order.id} is now on the way.",
+            requires_action=False
+        )
+
+        return redirect('merchant:order-details', pk=pk)
 class Dashboard(LoginRequiredMixin, UserPassesTestMixin, View):
     def get(self, request, *args, **kwargs):
         # get the current date 

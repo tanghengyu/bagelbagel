@@ -77,6 +77,14 @@
                                     <button type="submit" class="btn btn-success btn-sm">Mark as Delivered</button>
                                 </form>
                             </td>
+                            <td>
+                                {% if order.status == 'Ready for Pickup' %}
+                                    <form method="POST" action="{% url 'driver:mark_order_on_the_way' order.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-warning btn-sm">Order Picked Up</button>
+                                    </form>
+                                {% endif %}
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>
