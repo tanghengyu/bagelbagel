@@ -98,29 +98,6 @@ class AddCategoryView(LoginRequiredMixin, UserPassesTestMixin,View):
         return self.request.user.profile.role =='Merchant'
     
 
-class Dashboard(LoginRequiredMixin, UserPassesTestMixin, View):
-    def get(self, request, *args, **kwargs):
-        # get the current date 
-        today=datetime.today()
-        orders = OrderModel.objects.filter(created_on__year=today.year, created_on__month=today.month, created_on__day__lte=today.day)
-
-        # loop through the orders and add the price values 
-        total_revenue = 0
-        for order in orders:
-            total_revenue+= order.price 
-
-        # pass total number of orders and total revenus into template 
-        context = {
-            'orders': orders, 
-            'total_revenue': total_revenue,
-            'total_orders': len(orders)
-        }
-        return render(request, 'merchant/dashboard.html', context)
-    
-    def test_func(self):
-        # validate if the users are allowed to view the dashbaord or not for user passes
-        #return self.request.user.groups.filter(name='Staff').exists()
-        return self.request.user.profile.role =='Merchant'
 class ChangeItemStatusView(LoginRequiredMixin, UserPassesTestMixin, View):
     def post(self, request, item_id, *args, **kwargs):
         menu_item = get_object_or_404(MenuItem, pk=item_id, merchant=request.user.profile)
@@ -206,4 +183,40 @@ class OrderDetails(LoginRequiredMixin, UserPassesTestMixin, View):
     def test_func(self):
         # validate if the users are allowed to view the dashbaord or not for user passes
         # return self.request.user.groups.filter(name='Merchant').exists()
+        return self.request.user.profile.role =='Merchant'
+from django.http import JsonResponse
+class MarkNotificationReadView(View):
+    def post(self, request, notification_id, *args, **kwargs):
+        # Retrieve the notification
+        notification = get_object_or_404(Message, pk=notification_id, recipient=request.user.profile)
+        
+        # Mark the notification as read
+        notification.is_read = True
+        notification.save()
+
+        # Respond with success
+        return JsonResponse({'success': True})
+    
+class Dashboard(LoginRequiredMixin, UserPassesTestMixin, View):
+    def get(self, request, *args, **kwargs):
+        # get the current date 
+        today=datetime.today()
+        orders = OrderModel.objects.filter(created_on__year=today.year, created_on__month=today.month, created_on__day__lte=today.day)
+
+        # loop through the orders and add the price values 
+        total_revenue = 0
+        for order in orders:
+            total_revenue+= order.price 
+
+        # pass total number of orders and total revenus into template 
+        context = {
+            'orders': orders, 
+            'total_revenue': total_revenue,
+            'total_orders': len(orders)
+        }
+        return render(request, 'merchant/dashboard.html', context)
+    
+    def test_func(self):
+        # validate if the users are allowed to view the dashbaord or not for user passes
+        #return self.request.user.groups.filter(name='Staff').exists()
         return self.request.user.profile.role =='Merchant'

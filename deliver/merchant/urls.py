@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import Dashboard, OrderDetails, MerchantDashboard, AddCategoryView, DeleteMenuItem, ChangeItemStatusView, AcceptOrderView, DeclineOrderView
+from .views import Dashboard, OrderDetails, MerchantDashboard, AddCategoryView, DeleteMenuItem, ChangeItemStatusView, AcceptOrderView, DeclineOrderView, MarkNotificationReadView
 app_name = 'merchant'
 urlpatterns = [
     path('merchant_dashboard/', MerchantDashboard.as_view(), name='merchant_dashboard'),
@@ -10,4 +10,6 @@ urlpatterns = [
     path('menu-item/<int:item_id>/change-status/', ChangeItemStatusView.as_view(), name='change_item_status'),
     path('order/<int:order_id>/accept/', AcceptOrderView.as_view(), name='accept_order'),
     path('order/<int:order_id>/decline/', DeclineOrderView.as_view(), name='decline_order'),
+    path('mark-notification-read/<int:notification_id>/', MarkNotificationReadView.as_view(), name='mark_notification_read'),
+
 ]
