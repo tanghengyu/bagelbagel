@@ -42,6 +42,12 @@
                     <button type="submit" class="btn btn-outline-success">Order Ready</button>
                 </form>
                 {% endif %}
+                {% if order.status == 'Ready for Pickup' %}
+                <form method="POST" action="{% url 'merchant:change_order_status' order.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-warning mt-3">Order Picked Up</button>
+                </form>
+                {% endif %}
             </p>
         </div>
     </div>

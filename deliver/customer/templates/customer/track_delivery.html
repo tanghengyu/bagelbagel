@@ -1,0 +1,18 @@
+{% extends "customer/base.html" %}
+{% block content %}
+<div class="container mt-5">
+    <h2>Track Your Delivery</h2>
+
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">Order #{{ order.id }}</h5>
+            <p><strong>Status:</strong> {{ order.status }}</p>
+            <p><strong>Driver:</strong> {{ driver.user.username }} ({{ driver.vehicle_info }})</p>
+            <p><strong>Delivery Address:</strong> {{ order.street }}, {{ order.city }}, {{ order.state }}, {{ order.zip_code }}</p>
+            <p><strong>Total Price:</strong> ${{ order.price }}</p>
+        </div>
+    </div>
+
+    <a href="{% url 'customer:customer_profile' %}" class="btn btn-secondary mt-3">Back to Profile</a>
+</div>
+{% endblock %}

@@ -54,7 +54,24 @@ class MarkOrderDeliveredView(LoginRequiredMixin, View):
             requires_action=False
         )
         return redirect('driver:driver_dashboard')
-    
+class MarkOrderOnTheWayView(View):
+    def post(self, request, order_id, *args, **kwargs):
+        # Fetch the order and ensure it's Ready for Pickup
+        order = get_object_or_404(OrderModel, pk=order_id, status='Ready for Pickup')
+
+        # Check if the user is authorized to update the status
+        if (request.user.profile.role == 'Merchant' and order.merchant == request.user.profile) or \
+           (request.user.profile.role == 'Driver' and order.driver == request.user.profile):
+            order.status = 'Order On the Way'
+            order.save()
+        Message.objects.create(
+            sender=request.user.profile,
+            recipient=order.customer,
+            order=order,
+            message=f"Your order #{order.id} is now on the way.",
+            requires_action=False
+        )
+        return redirect(request.META.get('HTTP_REFERER', '/'))
 class AcceptDeliveryView(LoginRequiredMixin, View):
     def post(self, request, order_id, *args, **kwargs):
         driver = request.user.profile

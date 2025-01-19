@@ -17,59 +17,6 @@ class About(View):
     def get(self, request, *args, **kwargs):
         return render(request, 'customer/about.html')
     
-
-
-# class Register(View):
-#     def get(self, request, *args, **kwargs):
-#         return render(request, 'customer/register.html')
-    
-#     def post(self, request, *args, **kwargs):
-#         username = request.POST.get("username")
-#         email = request.POST.get("email")
-#         password = request.POST.get("password")
-#         role = request.POST.get("role")
-#         store_location = request.POST.get("store_location", None)
-#         menu_items = request.POST.get("menu_items", None)
-#         vehicle_info = request.POST.get("vehicle_info", None)
-#         print('grabbing information for {}'.format(username))
-#         if User.objects.filter(username=username).exists():
-#             messages.error(request, "Username already exists.")
-#             return redirect("index")
-
-#         user = User.objects.create_user(username=username, email=email, password=password)
-#         profile = Profile.objects.create(
-#             user=user,
-#             role=role,
-#             store_location=store_location if role == "Merchant" else None,
-#             menu_items=menu_items if role == "Merchant" else None,
-#             vehicle_info=vehicle_info if role == "Driver" else None,
-#         )
-#         # Save role-specific data
-#         profile.save()
-        
-#         messages.success(request, "Registration successful! Please check your email to activate your profile.")
-#         return redirect("login")
-    
-# from django.contrib.auth.views import LoginView
-
-# class UserLoginView(LoginView):
-#     template_name = 'customer/login.html'
-
-#     def get_success_url(self):
-#         """Redirect users after successful login."""
-#         return self.request.GET.get('next', '/')
-    
-# from django.contrib.auth.views import LoginView
-
-# class UserLoginView(View):
-#     template_name = 'customer/login.html'
-#     def get(self, request, *args, **kwargs):
-#         return render(request, 'customer/login.html') 
-
-    # def get_success_url(self):
-    #     """Redirect users after successful login."""
-    #     return self.request.GET.get('next', '/')
-    
 class MerchantIndexView(View):
     def get(self, request, *args, **kwargs):
         merchants = Profile.objects.filter(role='Merchant')
@@ -223,7 +170,7 @@ class CustomerProfileView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         # current_orders = get_object_or_404(OrderModel, customer=request.user)
         curr_customer = Profile.objects.get(user=request.user, role='Customer')
-        current_orders = OrderModel.objects.filter(customer=curr_customer).order_by('created_on')
+        current_orders = OrderModel.objects.filter(customer=curr_customer).order_by('-created_on')[:10] # LIMIT TO latest 10 orders 
 
         # orders = OrderModel.objects.filter(created_on__year=today.year, created_on__month=today.month, created_on__day__lte=today.day,
         #                                    merchant=merchant)
@@ -441,3 +388,43 @@ class RateOrderView(LoginRequiredMixin, View):
             )
 
         return redirect('customer:customer_profile')
+    
+class TrackDeliveryView(View):
+    def get(self, request, order_id, *args, **kwargs):
+        # Fetch the order for the logged-in customer
+        order = get_object_or_404(OrderModel, pk=order_id, customer=request.user.profile)
+
+        # Ensure the order is either "On the Way" or "Delivered"
+        if order.status not in ['Order On the Way', 'Delivered']:
+            return render(request, 'customer/error.html', {'message': 'This order is not yet out for delivery.'})
+
+        context = {
+            'order': order,
+            'driver': order.driver,  # Driver details
+        }
+        return render(request, 'customer/track_delivery.html', context)
+
+from django.utils.dateparse import parse_date
+
+class ViewOrderHistoryView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        curr_customer = Profile.objects.get(user=request.user, role='Customer')
+
+        # Get the start and end dates from the query parameters
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+
+        # Filter orders based on the date range
+        all_orders = OrderModel.objects.filter(customer=curr_customer).order_by('-created_on')
+        if start_date:
+            all_orders = all_orders.filter(created_on__date__gte=parse_date(start_date))
+        if end_date:
+            all_orders = all_orders.filter(created_on__date__lte=parse_date(end_date))
+
+        context = {
+            'all_orders': all_orders,
+            'start_date': start_date,
+            'end_date': end_date,
+        }
+        return render(request, 'customer/order_history.html', context)
+
