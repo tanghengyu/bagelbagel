@@ -7,6 +7,8 @@ from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin # validate the request based on 
 
 import json
+from django.http import JsonResponse
+from django.contrib.auth.mixins import LoginRequiredMixin # validate the request based on 
 
 # Create your views here.
 class Index(View):
@@ -113,7 +115,6 @@ class Order(UserPassesTestMixin, View):
 
 
 
-from django.http import JsonResponse
 class OrderConfirmation(View):
     def get(self, request, pk, *args, **kwargs):
         order = OrderModel.objects.get(pk=pk)
@@ -133,38 +134,12 @@ class OrderConfirmation(View):
         return redirect('payment-submitted')
 
 
-    # def post(self, request, pk, *args, **kwargs):
-    #     if request.content_type != 'application/json':
-    #         return JsonResponse({'error': 'Invalid Content-Type. Expected application/json.'}, status=400)
-
-    #     try:
-    #         data = json.loads(request.body)
-    #         print("Parsed data:", data)
-
-    #         # Process the data
-    #         if data.get('isPaid'):
-    #             order = OrderModel.objects.get(pk=pk)
-    #             order.is_paid = True
-    #             order.save()
-    #             return JsonResponse({'message': 'Order marked as paid successfully.'})
-    #         else:
-    #             return JsonResponse({'error': 'isPaid flag is missing or false.'}, status=400)
-
-    #     except json.JSONDecodeError as e:
-    #         print("JSON decode error:", str(e))
-    #         return JsonResponse({'error': 'Invalid JSON format.'}, status=400)
-
-    #     except Exception as e:
-    #         print("Unexpected error:", str(e))
-    #         return JsonResponse({'error': 'An unexpected error occurred.'}, status=500)
-    #     return redirect('payment-submitted')
 
 class OrderPayConfirmation(View):
     def get(self, request, *args, **kwargs):
         return render(request, 'customer/order_pay_confirmation.html')
 
 
-from django.contrib.auth.mixins import LoginRequiredMixin # validate the request based on 
 
 class CustomerProfileView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
@@ -248,7 +223,6 @@ class CancelOrderView(LoginRequiredMixin, View):
 
 class ShoppingCartView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        # shopping_cart = ShoppingCartModel.objects.filter(customer=request.user).first()
         shopping_cart = get_object_or_404(ShoppingCartModel, customer=request.user)
         cart_items = shopping_cart.cart_items.all() if shopping_cart else [] 
         total_price = shopping_cart.calculate_total_price() if shopping_cart else 0
