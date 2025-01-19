@@ -15,7 +15,7 @@ class MerchantDashboard(LoginRequiredMixin,  UserPassesTestMixin, View):
         today=datetime.today()
         merchant = get_object_or_404(Profile, user=request.user, role='Merchant')
         orders = OrderModel.objects.filter(created_on__year=today.year, created_on__month=today.month, created_on__day__lte=today.day,
-                                           merchant=merchant)
+                                           merchant=merchant).order_by('-created_on')[:10]
 
         # loop through the orders and add the price values 
         total_revenue = 0
@@ -224,6 +224,33 @@ class ChangeOrderStatusView(View):
         )
 
         return redirect('merchant:order-details', pk=pk)
+
+from django.utils.dateparse import parse_date
+
+class ViewOrderHistoryView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        curr_merchant = Profile.objects.get(user=request.user, role='Merchant')
+
+        # Get the start and end dates from the query parameters
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+
+        # Filter orders based on the date range
+        all_orders = OrderModel.objects.filter(merchant=curr_merchant).order_by('-created_on')
+        if start_date:
+            all_orders = all_orders.filter(created_on__date__gte=parse_date(start_date))
+        if end_date:
+            all_orders = all_orders.filter(created_on__date__lte=parse_date(end_date))
+
+        context = {
+            'all_orders': all_orders,
+            'start_date': start_date,
+            'end_date': end_date,
+        }
+        return render(request, 'merchant/order_history.html', context)
+
+
+
 class Dashboard(LoginRequiredMixin, UserPassesTestMixin, View):
     def get(self, request, *args, **kwargs):
         # get the current date 

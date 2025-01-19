@@ -170,7 +170,7 @@ class CustomerProfileView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         # current_orders = get_object_or_404(OrderModel, customer=request.user)
         curr_customer = Profile.objects.get(user=request.user, role='Customer')
-        current_orders = OrderModel.objects.filter(customer=curr_customer).order_by('created_on')
+        current_orders = OrderModel.objects.filter(customer=curr_customer).order_by('-created_on')[:10] # LIMIT TO latest 10 orders 
 
         # orders = OrderModel.objects.filter(created_on__year=today.year, created_on__month=today.month, created_on__day__lte=today.day,
         #                                    merchant=merchant)
@@ -403,3 +403,28 @@ class TrackDeliveryView(View):
             'driver': order.driver,  # Driver details
         }
         return render(request, 'customer/track_delivery.html', context)
+
+from django.utils.dateparse import parse_date
+
+class ViewOrderHistoryView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        curr_customer = Profile.objects.get(user=request.user, role='Customer')
+
+        # Get the start and end dates from the query parameters
+        start_date = request.GET.get('start_date')
+        end_date = request.GET.get('end_date')
+
+        # Filter orders based on the date range
+        all_orders = OrderModel.objects.filter(customer=curr_customer).order_by('-created_on')
+        if start_date:
+            all_orders = all_orders.filter(created_on__date__gte=parse_date(start_date))
+        if end_date:
+            all_orders = all_orders.filter(created_on__date__lte=parse_date(end_date))
+
+        context = {
+            'all_orders': all_orders,
+            'start_date': start_date,
+            'end_date': end_date,
+        }
+        return render(request, 'customer/order_history.html', context)
+

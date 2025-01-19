@@ -19,10 +19,13 @@
               <a href="{% url 'customer:customer_profile' %}" class="nav-link">
                   <i class="fas fa-user"></i>
               </a>
+              <li class="nav-item"><a class="nav-link" href="{% url 'customer:view_order_history' %}">Order History</a></li>
             {% elif user.profile.role == "Merchant" %}
                 <a href="{% url 'merchant:dashboard' %}" class="nav-link">
                     <i class="fas fa-user"></i>
                 </a>
+                <li class="nav-item"><a class="nav-link" href="{% url 'merchant:view_order_history' %}">Order History</a></li>
+
             {% elif user.profile.role == "Driver" %}
                 <a href="{% url 'driver:driver_dashboard' %}" class="nav-link">
                     <i class="fas fa-user"></i>
