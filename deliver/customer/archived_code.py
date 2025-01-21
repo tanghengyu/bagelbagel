@@ -48,3 +48,28 @@
     # def get_success_url(self):
     #     """Redirect users after successful login."""
     #     return self.request.GET.get('next', '/')
+    # def post(self, request, pk, *args, **kwargs):
+    #     if request.content_type != 'application/json':
+    #         return JsonResponse({'error': 'Invalid Content-Type. Expected application/json.'}, status=400)
+
+    #     try:
+    #         data = json.loads(request.body)
+    #         print("Parsed data:", data)
+
+    #         # Process the data
+    #         if data.get('isPaid'):
+    #             order = OrderModel.objects.get(pk=pk)
+    #             order.is_paid = True
+    #             order.save()
+    #             return JsonResponse({'message': 'Order marked as paid successfully.'})
+    #         else:
+    #             return JsonResponse({'error': 'isPaid flag is missing or false.'}, status=400)
+
+    #     except json.JSONDecodeError as e:
+    #         print("JSON decode error:", str(e))
+    #         return JsonResponse({'error': 'Invalid JSON format.'}, status=400)
+
+    #     except Exception as e:
+    #         print("Unexpected error:", str(e))
+    #         return JsonResponse({'error': 'An unexpected error occurred.'}, status=500)
+    #     return redirect('payment-submitted')
