@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin # validate the request based on 
 
 import json
+from django.db.models import Q
 from django.http import JsonResponse
 from django.contrib.auth.mixins import LoginRequiredMixin # validate the request based on 
 
@@ -145,13 +146,17 @@ class CustomerProfileView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
         # current_orders = get_object_or_404(OrderModel, customer=request.user)
         curr_customer = Profile.objects.get(user=request.user, role='Customer')
-        current_orders = OrderModel.objects.filter(customer=curr_customer).order_by('-created_on')[:10] # LIMIT TO latest 10 orders 
+        current_orders = OrderModel.objects.filter(customer=curr_customer).filter(
+            ~Q(status='Delivered') | Q(status='Completed')
+        ).order_by('-created_on')[:10] # LIMIT TO latest 10 orders 
 
         # orders = OrderModel.objects.filter(created_on__year=today.year, created_on__month=today.month, created_on__day__lte=today.day,
         #                                    merchant=merchant)
         
-        delivered_orders = OrderModel.objects.filter(customer=curr_customer, status='Delivered')
 
+        delivered_orders = OrderModel.objects.filter(customer=curr_customer).filter(
+            Q(status='Delivered') | Q(status='Completed'))
+        
         shopping_cart = get_object_or_404(ShoppingCartModel, customer=request.user)
         shopping_cart_total_price = shopping_cart.calculate_total_price()
         cart_items = shopping_cart.cart_items.all() if shopping_cart else [] 

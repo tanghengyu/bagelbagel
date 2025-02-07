@@ -1,4 +1,4 @@
-{% extends 'customer/base.html' %}
+{% extends 'driver/base.html' %}
 {% block content %}
 <div class="container my-5">
     <h2 class="text-center">Driver Dashboard</h2>
@@ -258,7 +258,7 @@ function createModal(notificationId, rating, comment) {
                         <p><strong>Comment:</strong> ${comment}</p>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary mark-as-read-btn" data-dismiss="modal")">Close</button>
+                        <button type="button" class="btn btn-secondary mark-as-read-btn" data-dismiss="modal">Close</button>
                     </div>
                 </div>
             </div>
@@ -333,11 +333,12 @@ function updateNotificationCenter() {
         const markAsReadButtons = document.querySelectorAll(".mark-as-read-btn");
 
         markAsReadButtons.forEach(button => {
-            button.addEventListener("click", function () {
+            button.addEventListener("click", function (event) {
+                event.stopPropagation(); // Prevent dropdown from closing
                 const notificationId = this.getAttribute("data-notification-id");
                 const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-                fetch(`/driver/mark-notification-read/${notificationId}/`, {
+                fetch(`/customer/mark-notification-read/${notificationId}/`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",

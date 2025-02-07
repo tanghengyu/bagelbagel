@@ -66,11 +66,7 @@
                                     Under Preparation
                                 {% endif %} -->
                             </td>
-                            <td>
-                                {% if order.status == 'Order On the Way' %}
-                                    <a href="{% url 'customer:track_delivery' order.id %}" class="btn btn-info btn-sm">Track Delivery</a>
-                                {% endif %}
-                            </td>
+
                             <td>{{ order.created_on|date:"M d, Y h:i A" }}</td>
                             <td>
                                 <!-- Eye Icon -->
@@ -118,6 +114,11 @@
                                     </div>
                                 </div>
                             </td>
+                            <td>
+                                {% if order.status == 'Order On the Way' %}
+                                    <a href="{% url 'customer:track_delivery' order.id %}" class="btn btn-info btn-sm">Track Delivery</a>
+                                {% endif %}
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -148,7 +149,7 @@
                             <td>{{ order.merchant.user.username }}</td>
                             <td>{{ order.driver.user.username }}</td>
                             <td>${{ order.price }}</td>
-                            <td>{{ order.updated_at|date:"M d, Y h:i A" }}</td>
+                            <td>{{ order.delivered_at|date:"M d, Y h:i A" }}</td>
                             <td>
                                 {% if order.rating %}
                                     <span>{{ order.rating }} stars</span>
@@ -303,7 +304,8 @@
         const markAsReadButtons = document.querySelectorAll(".mark-as-read-btn");
 
         markAsReadButtons.forEach(button => {
-            button.addEventListener("click", function () {
+            button.addEventListener("click", function (event) {
+                event.stopPropagation(); // Prevent dropdown from closing
                 const notificationId = this.getAttribute("data-notification-id");
                 const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 

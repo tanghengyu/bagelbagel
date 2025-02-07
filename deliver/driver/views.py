@@ -43,6 +43,7 @@ class DriverDashboardView(LoginRequiredMixin, View):
         return render(request, 'driver/driver_dashboard.html', context)
 class GetUnreadNotificationsCountView(LoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
+        print('Is this called')
         # Get the count of unread notifications
         unread_count = Message.objects.filter(recipient=request.user.profile, is_read=False).count()
         print('unread count ',  unread_count)
@@ -59,7 +60,6 @@ class ViewRatingDetailView(LoginRequiredMixin, View):
     
 class MarkNotificationReadView(LoginRequiredMixin, View):
     def post(self, request, notification_id, *args, **kwargs):
-        print('FUNCTIONAL CALLED')
         notification = get_object_or_404(Message, pk=notification_id, recipient=request.user.profile)
         notification.is_read = True
         notification.save()
