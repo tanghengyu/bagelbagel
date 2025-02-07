@@ -148,7 +148,7 @@ class AcceptOrderView(LoginRequiredMixin, View):
 
 
 class DeclineOrderView(LoginRequiredMixin, View):
-    def get(self, request, order_id, *args, **kwargs):
+    def post(self, request, order_id, *args, **kwargs):
         order = get_object_or_404(OrderModel, pk=order_id, merchant=request.user.profile)
         order.status = 'Cancelled'
         order.save()
