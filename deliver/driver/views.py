@@ -5,6 +5,7 @@ from customer.models import OrderModel, Message
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.db.models import Q
+from django.utils import timezone
 
 # Create your views here.
 class DriverDashboardView(LoginRequiredMixin, View):
@@ -12,17 +13,25 @@ class DriverDashboardView(LoginRequiredMixin, View):
         driver = request.user.profile
         pending_orders = OrderModel.objects.filter(driver=driver).filter(
             Q(status='Under Preparation') | Q(status='Ready for Pickup') | Q(status='Order On the Way'))
-        delivered_orders = OrderModel.objects.filter(driver=driver, status='Delivered')
+        delivered_orders = OrderModel.objects.filter(driver=driver).filter(
+            Q(status='Delivered') | Q(status='Completed'))
         # notifications = Message.objects.filter(recipient=driver, is_read=False)
         notifications = Message.objects.filter(recipient=driver, is_read=False).filter(
             Q(order__driver__isnull=True) | Q(order__driver=driver)
         )
         for notification in notifications:
+            if notification.order and notification.order.rating:
+                notification.show_rating_button = True
+            else:
+                notification.show_rating_button = False
+
+
             if notification.order:
                 notification.show_action_buttons = (
                     notification.order.driver is None and 
                     notification.order.status in ['Ready for Pickup', 'Under Preparation']
                 )
+
             else:
                 notification.show_action_buttons = False
         context = {
@@ -32,6 +41,21 @@ class DriverDashboardView(LoginRequiredMixin, View):
             'notifications_count': notifications.count(),
         }
         return render(request, 'driver/driver_dashboard.html', context)
+class GetUnreadNotificationsCountView(LoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        # Get the count of unread notifications
+        unread_count = Message.objects.filter(recipient=request.user.profile, is_read=False).count()
+        print('unread count ',  unread_count)
+        return JsonResponse({'success': True, 'unread_count': unread_count})
+    
+class ViewRatingDetailView(LoginRequiredMixin, View):
+    def post(self, request, notification_id, *args, **kwargs):
+        print('view rating CALLED')
+        notification = get_object_or_404(Message, pk=notification_id, recipient=request.user.profile)
+        notification.is_read = True
+        
+        notification.save()
+        return JsonResponse({'success': True, 'rating': notification.order.rating, 'comment': notification.order.rating_comment})
     
 class MarkNotificationReadView(LoginRequiredMixin, View):
     def post(self, request, notification_id, *args, **kwargs):
@@ -45,6 +69,7 @@ class MarkOrderDeliveredView(LoginRequiredMixin, View):
     def post(self, request, order_id, *args, **kwargs):
         order = get_object_or_404(OrderModel, pk=order_id)
         order.status = 'Delivered'
+        order.delivered_at = timezone.now()
         order.save()
         Message.objects.create(
             sender=order.driver,  # The customer who placed the order

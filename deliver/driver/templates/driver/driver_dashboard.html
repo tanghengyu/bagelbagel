@@ -3,6 +3,7 @@
 <div class="container my-5">
     <h2 class="text-center">Driver Dashboard</h2>
 
+
     <!-- Notification Center -->
     <div class="mt-4">
         <h3>Notification Center</h3>
@@ -33,12 +34,25 @@
                                         <button type="submit" class="btn btn-sm btn-danger">Decline</button>
                                     </form>
                                 </div>
+                            {% elif notification.show_rating_button %}
+
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    <button type="button" class="btn btn-info btn-sm view-rating-btn" data-notification-id="{{ notification.id }}">
+                                        View Order Comment
+                                    </button>
+                                </form>
+
+                            
                             {% else %}
                                 <!-- Close Icon for General Notifications -->
                                 <button class="btn btn-sm btn-link text-danger mark-as-read-btn" data-notification-id="{{ notification.id }}">
                                     <i class="fas fa-times"></i>
                                 </button>
                             {% endif %}
+
+
+
                         </div>
                     {% endfor %}
                 {% else %}
@@ -115,7 +129,7 @@
                             <td>{{ order.customer.user.username }}</td>
                             <td>{{ order.street }}, {{ order.city }}, {{ order.state }}, {{ order.zip_code }}</td>
                             <td>${{ order.price }}</td>
-                            <td>{{ order.updated_at|date:"M d, Y h:i A" }}</td>
+                            <td>{{ order.delivered_at|date:"M d, Y h:i A" }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -125,6 +139,194 @@
         {% endif %}
     </div>
 </div>
+
+
+<!-- <div class="modal fade" id="viewRatingModal" tabindex="-1" role="dialog" aria-labelledby="viewRatingModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+        <h5 class="modal-title" id="viewRatingModalLabel">Test Modal</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        </div>
+        <div class="modal-body">
+        This is a test modal.
+        </div>
+        <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+    </div>
+    </div>
+</div> -->
+<!-- Modal for Order Rating and Comment -->
+
+
+<!-- <script>
+    // Function to load modal data (rating and comment)
+    function loadModalData(button) {
+    // Access the stored data
+    var notificationId = button.getAttribute('data-target').replace('#viewRatingModal', '');
+    var rating = button.getAttribute('data-rating');
+    var comment = button.getAttribute('data-comment');
+
+    // Now you can use the values to populate the modal or perform other actions
+    document.getElementById('rating-' + notificationId).textContent = rating;
+    document.getElementById('comment-' + notificationId).textContent = comment;
+    }
+    function showNotificationDetails(notificationId, rating, comment) {
+    // Set the modal content dynamically
+    document.getElementById('viewRatingModalLabel' + notificationId).textContent = 'Rating for Order #' + notificationId;
+    document.getElementById('rating-' + notificationId).textContent = rating + ' stars';
+    document.getElementById('comment-' + notificationId).textContent = comment;
+
+    // Show the modal using Bootstrap's JavaScript method
+    $('#viewRatingModal' + notificationId).modal('show');
+}
+    // Function to mark notification as read
+    function markAsRead(notificationId) {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        // AJAX request to mark notification as read
+        fetch(`/driver/mark-notification-read/${notificationId}/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrfToken,
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const notificationElement = document.querySelector(`[data-notification-id="${notificationId}"]`);
+                if (notificationElement) {
+                    notificationElement.closest(".dropdown-item").remove(); // Remove the notification from the dropdown
+                    const badge = document.querySelector(".notification-dropdown .badge");
+                    if (badge) {
+                        const count = parseInt(badge.textContent, 10) - 1;
+                        badge.textContent = count > 0 ? count : ""; // Update the badge count
+                    }
+                }
+            } else {
+                alert("Failed to mark notification as read.");
+            }
+        })
+        .catch(error => console.error("Error marking notification as read:", error));
+    }
+</script> -->
+<script>
+    document.querySelectorAll('.view-rating-btn').forEach(function(button) {
+    button.addEventListener('click', function() {
+        var notificationId = this.getAttribute('data-notification-id'); // Get the notification id
+        
+        // Send an AJAX POST request to get the rating and comment
+        fetch(`/driver/view-rating-detail/${notificationId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value, // CSRF token
+            },
+            body: JSON.stringify({ notification_id: notificationId }) // Pass the notification id in the body
+        })
+        .then(response => response.json())  // Assuming the response is JSON
+        .then(data => {
+            if (data.success) {
+                // Call function to create and show modal
+                createModal(notificationId, data.rating, data.comment);
+            } else {
+                alert('Error fetching the details!');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+});
+// Function to dynamically create the modal and show it
+function createModal(notificationId, rating, comment) {
+    // Create the modal HTML dynamically
+    var modalHTML = `
+        <div class="modal fade" id="viewRatingModal${notificationId}" tabindex="-1" aria-labelledby="viewRatingModalLabel${notificationId}" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewRatingModalLabel${notificationId}">Rating for Order #${notificationId}</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="markAsReadAndCloseModal('${notificationId}')">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p><strong>Rating:</strong> ${rating} stars</p>
+                        <p><strong>Comment:</strong> ${comment}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary mark-as-read-btn" data-dismiss="modal")">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Append the modal HTML to the body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    // Show the modal using Bootstrap's JavaScript method
+    var modal = new bootstrap.Modal(document.getElementById('viewRatingModal' + notificationId));
+    modal.show();
+}
+function markAsReadAndCloseModal(notificationId) {
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    // Send AJAX request to mark the notification as read
+    fetch(`/driver/mark-notification-read/${notificationId}/`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken,
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update the notification center and remove the modal
+            updateNotificationCenter();
+            removeModal(notificationId);
+        } else {
+            alert("Failed to mark notification as read.");
+        }
+    })
+    .catch(error => console.error("Error marking notification as read:", error));
+}
+
+// Function to remove modal after it's closed (clean up the DOM)
+function removeModal(notificationId) {
+    var modalElement = document.getElementById('viewRatingModal' + notificationId);
+    if (modalElement) {
+        modalElement.remove(); // Remove modal from the DOM
+    }
+}
+function updateNotificationCenter() {
+    // Get the updated notifications count
+    fetch('/driver/get-unread-notifications-count/', {
+        method: 'GET',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value, // CSRF token
+        },
+        body: JSON.stringify({ unread_count: unread_count })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update the badge with the new unread count
+            const badge = document.querySelector('.notification-dropdown .badge');
+            if (badge) {
+                badge.textContent = data.unread_count > 0 ? data.unread_count : '';
+            }
+        } else {
+            alert("Failed to update the notification count.");
+        }
+    })
+    .catch(error => console.error("Error updating notification count:", error));
+}
+</script>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {

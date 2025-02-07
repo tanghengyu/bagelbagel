@@ -110,18 +110,10 @@ class OrderModel(models.Model):
     )
     rating = models.PositiveIntegerField(null=True, blank=True, help_text="Rating given by the customer (1-5)")
     rating_comment = models.TextField(null=True, blank=True, help_text="Optional comment for the rating")
+    delivered_at = models.DateTimeField(null=True, blank=True, help_text="Time when the order was marked as delivered")
 
     def __str__(self):
         return f'Order: {self.created_on.strftime("%b %d %I: %M %p")}'
-# class Notification(models.Model):
-#     merchant = models.ForeignKey('Profile', on_delete=models.CASCADE, related_name='notifications')
-#     order = models.ForeignKey('OrderModel', on_delete=models.CASCADE, related_name='notifications')
-#     message = models.CharField(max_length=255)
-#     is_read = models.BooleanField(default=False)
-#     created_on = models.DateTimeField(auto_now_add=True)
-
-#     def __str__(self):
-#         return f"Notification for {self.merchant.user.username}: {self.message}"
 
 class Message(models.Model):
     sender = models.ForeignKey(
@@ -152,7 +144,11 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Notification from {self.sender.user.username} to {self.recipient.user.username}: {self.message}"
+    def get_rating(self):
+        return self.order.rating if self.order else None
 
+    def get_comment(self):
+        return self.order.rating_comment if self.order else None
     
 class ShoppingCartModel(models.Model):
     customer = models.OneToOneField(
